@@ -1,0 +1,10 @@
+{{ define "main" }}
+<h1>{{ .Title }}</h1>
+{{ .Content }}
+{{ range .Pages.GroupByDate "2006" }}
+<section>
+  <h2 class="year">{{ .Key }}</h2>
+  {{ partial "post-list.html" .Pages }}
+</section>
+{{ end }}
+{{ end }}

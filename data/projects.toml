@@ -1,0 +1,7 @@
+# Projects listed on the homepage. Add one [[projects]] block per project.
+# url can point anywhere: another site, a repo, or a path on wrkstdy.com.
+
+[[projects]]
+  name = "wrkstdy.com"
+  url = "/blog/hello-world/"
+  description = "This site. Hugo, markdown, and a forest palette."

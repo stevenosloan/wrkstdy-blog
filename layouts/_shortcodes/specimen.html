@@ -1,0 +1,12 @@
+{{- /* Type specimen for the site's two families. */ -}}
+<div class="specimen">
+  {{ range slice (dict "name" "Fira Sans" "var" "sans") (dict "name" "Fira Code" "var" "mono") }}
+  <div class="specimen-family" style="font-family: var(--{{ .var }})">
+    <p class="muted"><code>--{{ .var }}</code> · {{ .name }}</p>
+    {{ range slice 400 500 600 }}
+    <p style="font-weight: {{ . }}">{{ . }} · The quick brown fox jumps over the lazy dog.</p>
+    {{ end }}
+    {{ if eq .var "mono" }}<p>Ligatures: -&gt; =&gt; != === &lt;= &gt;= :: |&gt; /* */</p>{{ else }}<p><em>Italic: notes from the workbench.</em></p>{{ end }}
+  </div>
+  {{ end }}
+</div>

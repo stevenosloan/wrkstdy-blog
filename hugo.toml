@@ -1,0 +1,42 @@
+baseURL = "https://wrkstdy.com/"
+locale = "en-US"
+title = "wrkstdy"
+enableRobotsTXT = true
+
+[params]
+  description = "Writing and a dev log from wrkstdy."
+  author = "Steven"
+
+[permalinks]
+  blog = "/blog/:slug/"
+
+[taxonomies]
+  tag = "tags"
+
+[outputs]
+  home = ["html", "rss"]
+  section = ["html", "rss"]
+  taxonomy = ["html"]
+  term = ["html", "rss"]
+
+[markup]
+  # Code blocks skip Hugo's Chroma highlighter: layouts/_markup/render-codeblock.html
+  # emits plain <pre><code class="language-x"> and MicroLighter colors it in the browser.
+  [markup.goldmark.renderer]
+    unsafe = false
+  [markup.tableOfContents]
+    startLevel = 2
+    endLevel = 3
+
+[menus]
+  [[menus.main]]
+    name = "blog"
+    pageRef = "/blog"
+    weight = 10
+  [[menus.main]]
+    name = "tags"
+    pageRef = "/tags"
+    weight = 20
+
+[services.rss]
+  limit = 20

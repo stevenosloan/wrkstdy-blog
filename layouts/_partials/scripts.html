@@ -1,0 +1,10 @@
+{{- /* MicroLighter only loads on pages that have code blocks. */ -}}
+{{ if findRE `<pre><code class="language-` .Content 1 }}
+<script type="module" src="/vendor/microlighter/microlighter.min.js"></script>
+{{ end }}
+{{- /* Set by the mermaid code block render hook. */ -}}
+{{ if .Store.Get "hasMermaid" }}
+{{ with resources.Get "js/mermaid.js" | minify | fingerprint }}
+<script type="module" src="{{ .RelPermalink }}" integrity="{{ .Data.Integrity }}"></script>
+{{ end }}
+{{ end }}

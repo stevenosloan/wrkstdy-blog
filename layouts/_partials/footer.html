@@ -1,0 +1,4 @@
+<footer class="site-footer">
+  <span>© {{ now.Year }} {{ site.Title }}</span>
+  {{ with site.GetPage "/blog" }}{{ with .OutputFormats.Get "rss" }}<a href="{{ .RelPermalink }}">rss</a>{{ end }}{{ end }}
+</footer>
