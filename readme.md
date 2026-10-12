@@ -6,11 +6,15 @@ The homepage and blog for wrkstdy.com, built by a small Go program in this repo 
 
 ```sh
 brew install go                    # Go 1.24 or newer; Netlify uses the version in netlify.toml
-go run ./cmd/wrkstdy serve         # http://localhost:1313, rebuilds when files change
+go tool mage                       # list tasks
+go tool mage serve                 # dev server on http://localhost:1313, rebuilds on save
 go run ./cmd/wrkstdy serve -drafts # include posts with draft: true
-go run ./cmd/wrkstdy build         # write the site to public/
-go test ./...
+go tool mage build                 # write the site to public/
+go tool mage test                  # go vet + tests
+go tool mage check                 # test, then build (what Netlify runs)
 ```
+
+Tasks live in `magefile.go`, and Mage is pinned in `go.mod` as a Go tool, so there's nothing to install.
 
 ## Write a post
 
@@ -44,6 +48,7 @@ That creates `content/blog/my-post.md` as a draft. Remove `draft: true` to publi
 | Path | What it is |
 | --- | --- |
 | `cmd/wrkstdy/` | The command: `build`, `serve`, `new` |
+| `magefile.go` | Dev tasks (serve, build, test, check) run with `go tool mage` |
 | `internal/site/` | The generator: content loading, markdown, templates, assets |
 | `site.toml` | Site title, base URL, and menu |
 | `content/_index.md` | Homepage intro text |

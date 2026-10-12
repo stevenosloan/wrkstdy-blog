@@ -1,15 +1,15 @@
 [build]
-  command = "go run ./cmd/wrkstdy build"
+  command = "go tool mage check"
   publish = "public"
 
 [build.environment]
   GO_VERSION = "1.24.7"
 
 [context.deploy-preview]
-  command = "go run ./cmd/wrkstdy build -baseurl $DEPLOY_PRIME_URL"
+  command = "BASEURL=$DEPLOY_PRIME_URL go tool mage check"
 
 [context.branch-deploy]
-  command = "go run ./cmd/wrkstdy build -baseurl $DEPLOY_PRIME_URL"
+  command = "BASEURL=$DEPLOY_PRIME_URL go tool mage check"
 
 # Fonts never change, and css/ and js/ files carry a content hash in their names.
 [[headers]]
