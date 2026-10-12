@@ -1,0 +1,4 @@
+{{ define "main" }}
+<h1>#{{ lower .Tag.Name }}</h1>
+{{ template "post-list.html" .Tag.Pages }}
+{{ end }}

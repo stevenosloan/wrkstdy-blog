@@ -1,0 +1,8 @@
+<ul class="post-list">
+  {{- range . }}
+  <li>
+    <time datetime="{{ date .Date }}">{{ date .Date }}</time>
+    <a href="{{ .URL }}">{{ .Title }}</a>
+  </li>
+  {{- end }}
+</ul>

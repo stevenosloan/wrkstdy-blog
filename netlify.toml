@@ -1,18 +1,28 @@
 [build]
-  command = "hugo --gc --minify"
+  command = "go run ./cmd/wrkstdy build"
   publish = "public"
 
 [build.environment]
-  HUGO_VERSION = "0.167.0"
-  HUGO_ENV = "production"
+  GO_VERSION = "1.24.7"
 
 [context.deploy-preview]
-  command = "hugo --gc --minify --buildFuture -b $DEPLOY_PRIME_URL"
+  command = "go run ./cmd/wrkstdy build -baseurl $DEPLOY_PRIME_URL"
 
 [context.branch-deploy]
-  command = "hugo --gc --minify -b $DEPLOY_PRIME_URL"
+  command = "go run ./cmd/wrkstdy build -baseurl $DEPLOY_PRIME_URL"
 
+# Fonts never change, and css/ and js/ files carry a content hash in their names.
 [[headers]]
   for = "/fonts/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/css/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/js/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"

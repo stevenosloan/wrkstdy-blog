@@ -1,0 +1,9 @@
+<header class="site-header">
+  <a class="wordmark" href="/">{{ .Site.Title }}</a>
+  <nav aria-label="Main">
+    {{- $url := .Page.URL }}
+    {{- range .Site.Menu }}
+    <a href="{{ .URL }}"{{ if active $url .URL }} aria-current="page"{{ end }}>{{ .Name }}</a>
+    {{- end }}
+  </nav>
+</header>

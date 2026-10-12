@@ -1,0 +1,6 @@
+{{- /* Live palette swatches; they follow light/dark because they read the CSS variables. */ -}}
+<ul class="swatches">
+  {{- range list "bg" "fg" "muted" "accent" "accent-2" "fern" "rule" "code-bg" }}
+  <li><span class="swatch" style="background: var(--{{ . }})"></span><code>--{{ . }}</code></li>
+  {{- end }}
+</ul>

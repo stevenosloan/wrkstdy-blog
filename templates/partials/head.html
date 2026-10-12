@@ -1,0 +1,11 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>{{ if eq .Page.URL "/" }}{{ .Site.Title }}{{ else }}{{ .Page.Title }} · {{ .Site.Title }}{{ end }}</title>
+<meta name="description" content="{{ or .Page.Description .Site.Description }}">
+<link rel="canonical" href="{{ .Site.AbsURL .Page.URL }}">
+<link rel="preload" href="/fonts/fira-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/fira-code-latin-500-normal.woff2" as="font" type="font/woff2" crossorigin>
+{{ $css := .Site.Asset "css/main.css" -}}
+<link rel="stylesheet" href="{{ $css.URL }}" integrity="{{ $css.Integrity }}">
+<link rel="alternate" type="application/rss+xml" href="{{ .Site.AbsURL "/blog/index.xml" }}" title="{{ .Site.Title }} blog">

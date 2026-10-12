@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="{{ .Site.Language }}">
+<head>
+  {{ template "head.html" . }}
+</head>
+<body data-syntax-theme="forest">
+  {{ template "header.html" . }}
+  <main id="main">
+    {{ block "main" . }}{{ end }}
+  </main>
+  {{ template "footer.html" . }}
+  {{ template "scripts.html" . }}
+</body>
+</html>

@@ -1,0 +1,8 @@
+{{- /* MicroLighter only loads on pages that have highlighted code blocks. */ -}}
+{{ if .Page.HasCode -}}
+<script type="module" src="/vendor/microlighter/microlighter.min.js"></script>
+{{ end -}}
+{{ if .Page.HasMermaid -}}
+{{ $js := .Site.Asset "js/mermaid.js" -}}
+<script type="module" src="{{ $js.URL }}" integrity="{{ $js.Integrity }}"></script>
+{{ end -}}

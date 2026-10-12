@@ -1,0 +1,27 @@
+{{ define "main" }}
+<section class="intro">
+  {{ .Page.Content }}
+</section>
+
+{{ with .Site.Projects }}
+<section>
+  <h2>projects</h2>
+  <ul class="link-list">
+    {{- range . }}
+    <li>
+      <a href="{{ .URL }}">{{ .Name }}</a>
+      {{ with .Description }}<span class="muted">{{ . }}</span>{{ end }}
+    </li>
+    {{- end }}
+  </ul>
+</section>
+{{ end }}
+
+{{ with .Site.Section "blog" }}
+<section>
+  <h2>recent posts</h2>
+  {{ template "post-list.html" (.Recent 8) }}
+  <p><a href="{{ .Index.URL }}">all posts →</a></p>
+</section>
+{{ end }}
+{{ end }}

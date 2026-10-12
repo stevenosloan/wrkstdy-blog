@@ -1,0 +1,14 @@
+baseURL = "https://wrkstdy.com/"
+title = "wrkstdy"
+description = "Writing and a dev log from wrkstdy."
+author = "Steven"
+language = "en-US"
+feedLimit = 20
+
+[[menu]]
+  name = "blog"
+  url = "/blog/"
+
+[[menu]]
+  name = "tags"
+  url = "/tags/"
