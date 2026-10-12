@@ -13,7 +13,6 @@ type Config struct {
 	Description string     `toml:"description"`
 	Author      string     `toml:"author"`
 	Language    string     `toml:"language"`
-	FeedLimit   int        `toml:"feedLimit"`
 	Menu        []MenuItem `toml:"menu"`
 }
 
@@ -30,7 +29,7 @@ type Project struct {
 }
 
 func loadConfig(path string) (Config, error) {
-	cfg := Config{Language: "en", FeedLimit: 20}
+	cfg := Config{Language: "en"}
 	if _, err := toml.DecodeFile(path, &cfg); err != nil {
 		return cfg, fmt.Errorf("reading config: %w", err)
 	}

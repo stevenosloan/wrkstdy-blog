@@ -14,7 +14,6 @@ const postTemplate = `---
 title: %q
 date: %s
 description: ""
-tags: []
 draft: true
 ---
 

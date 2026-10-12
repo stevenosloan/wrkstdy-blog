@@ -24,7 +24,6 @@ type Options struct {
 type Site struct {
 	Config
 	Projects []Project
-	Tags     []*Tag
 	Now      time.Time
 
 	sections map[string]*Section
@@ -52,17 +51,15 @@ func (s *Site) AbsURL(path string) string {
 
 // view is the data passed to every page template.
 type view struct {
-	Site    *Site
-	Page    *Page
-	Section *Section // list pages
-	Tag     *Tag     // tag pages
+	Site *Site
+	Page *Page
 }
 
 type builder struct {
 	opts       Options
 	md         goldmark.Markdown
 	shortcodes *template.Template
-	pages      map[string]*template.Template // by kind: home, list, single, tags, tag
+	pages      map[string]*template.Template // by kind: home, single
 }
 
 // Build renders the whole site into opts.Out and returns how many pages it wrote.
@@ -108,7 +105,6 @@ func Build(opts Options) (int, error) {
 	site := &Site{
 		Config:   cfg,
 		Projects: projects,
-		Tags:     collectTags(c.sections),
 		Now:      time.Now(),
 		sections: c.sections,
 		assets:   assets,
@@ -130,24 +126,10 @@ func Build(opts Options) (int, error) {
 		}
 	}
 	for _, s := range c.sections {
-		if err := render("list", view{Page: s.Index, Section: s}); err != nil {
-			return 0, err
-		}
 		for _, p := range s.Pages {
 			if err := render("single", view{Page: p}); err != nil {
 				return 0, err
 			}
-		}
-		if err := writeFeed(site, s, opts.Out); err != nil {
-			return 0, err
-		}
-	}
-	if err := render("tags", view{Page: &Page{Title: "tags", URL: "/tags/"}}); err != nil {
-		return 0, err
-	}
-	for _, t := range site.Tags {
-		if err := render("tag", view{Page: &Page{Title: "#" + t.Name, URL: t.URL}, Tag: t}); err != nil {
-			return 0, err
 		}
 	}
 	return count, nil

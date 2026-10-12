@@ -5,7 +5,6 @@
     {{ if not .Page.Date.IsZero }}
     <p class="meta">
       <time datetime="{{ date .Page.Date }}">{{ date .Page.Date }}</time>
-      {{ range .Page.Tags }}<a class="tag" href="{{ tagURL . }}">#{{ lower . }}</a>{{ end }}
     </p>
     {{ else }}{{ with .Page.Description }}<p class="meta">{{ . }}</p>{{ end }}{{ end }}
   </header>

@@ -27,10 +27,9 @@ var funcs = template.FuncMap{
 	"active": func(pageURL, menuURL string) bool {
 		return menuURL != "/" && strings.HasPrefix(pageURL, menuURL)
 	},
-	"tagURL": tagURL,
 }
 
-var pageKinds = []string{"home", "list", "single", "tags", "tag"}
+var pageKinds = []string{"home", "single"}
 
 // loadTemplates parses base.html and partials/ once, then clones that set for
 // each page kind so every kind can define its own "main" block.

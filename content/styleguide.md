@@ -19,7 +19,7 @@ sitemap:
 #### Heading four
 
 Body text is set in Fira Sans. It carries **bold**, *italic*, ~~strikethrough~~,
-`inline code`, and [links](/blog/). A footnote looks like this.[^1]
+`inline code`, and [links](/). A footnote looks like this.[^1]
 
 > A blockquote. Good for pulling out a line from somewhere else, or an aside
 > that deserves a little room.

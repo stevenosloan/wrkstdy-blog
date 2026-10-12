@@ -19,9 +19,8 @@
 
 {{ with .Site.Section "blog" }}
 <section>
-  <h2>recent posts</h2>
-  {{ template "post-list.html" (.Recent 8) }}
-  <p><a href="{{ .Index.URL }}">all posts →</a></p>
+  <h2>posts</h2>
+  {{ template "post-list.html" .Pages }}
 </section>
 {{ end }}
 {{ end }}

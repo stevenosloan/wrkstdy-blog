@@ -15,12 +15,11 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// Page is one rendered markdown file, or a generated page like a tag listing.
+// Page is one rendered markdown file.
 type Page struct {
 	Title       string
 	Description string
 	Date        time.Time
-	Tags        []string
 	Draft       bool
 
 	URL        string // site-relative, like "/blog/hello-world/"
@@ -36,41 +35,10 @@ type Section struct {
 	Pages []*Page // newest first
 }
 
-// Recent returns up to n of the newest pages.
-func (s *Section) Recent(n int) []*Page {
-	return s.Pages[:min(n, len(s.Pages))]
-}
-
-type YearGroup struct {
-	Year  int
-	Pages []*Page
-}
-
-// ByYear groups pages by year, newest first.
-func (s *Section) ByYear() []YearGroup {
-	var groups []YearGroup
-	for _, p := range s.Pages {
-		y := p.Date.Year()
-		if len(groups) == 0 || groups[len(groups)-1].Year != y {
-			groups = append(groups, YearGroup{Year: y})
-		}
-		last := &groups[len(groups)-1]
-		last.Pages = append(last.Pages, p)
-	}
-	return groups
-}
-
-type Tag struct {
-	Name  string
-	URL   string
-	Pages []*Page
-}
-
 type frontMatter struct {
 	Title       string    `yaml:"title"`
 	Description string    `yaml:"description"`
 	Date        time.Time `yaml:"date"`
-	Tags        []string  `yaml:"tags"`
 	Draft       bool      `yaml:"draft"`
 	Slug        string    `yaml:"slug"`
 }
@@ -194,46 +162,9 @@ func (b *builder) loadPage(path string) (page *Page, slug string, err error) {
 		Title:       fm.Title,
 		Description: fm.Description,
 		Date:        fm.Date,
-		Tags:        fm.Tags,
 		Draft:       fm.Draft,
 		Content:     template.HTML(html),
 		HasCode:     strings.Contains(html, `<pre><code class="language-`),
 		HasMermaid:  strings.Contains(html, `<pre class="mermaid">`),
 	}, slug, nil
-}
-
-// collectTags groups every sectioned page by tag, most-used tag first.
-func collectTags(sections map[string]*Section) []*Tag {
-	byName := map[string]*Tag{}
-	for _, s := range sections {
-		for _, p := range s.Pages {
-			for _, name := range p.Tags {
-				t, ok := byName[name]
-				if !ok {
-					t = &Tag{Name: name, URL: tagURL(name)}
-					byName[name] = t
-				}
-				t.Pages = append(t.Pages, p)
-			}
-		}
-	}
-
-	tags := make([]*Tag, 0, len(byName))
-	for _, t := range byName {
-		sort.SliceStable(t.Pages, func(i, j int) bool {
-			return t.Pages[i].Date.After(t.Pages[j].Date)
-		})
-		tags = append(tags, t)
-	}
-	sort.Slice(tags, func(i, j int) bool {
-		if len(tags[i].Pages) != len(tags[j].Pages) {
-			return len(tags[i].Pages) > len(tags[j].Pages)
-		}
-		return tags[i].Name < tags[j].Name
-	})
-	return tags
-}
-
-func tagURL(name string) string {
-	return "/tags/" + strings.ReplaceAll(strings.ToLower(name), " ", "-") + "/"
 }
