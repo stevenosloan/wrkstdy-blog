@@ -66,7 +66,7 @@ It won't overwrite an existing post, and the build fails if two posts end up wit
 | `content/blog/` | Blog posts, served under `/blog/` |
 | `data/projects.toml` | Project links listed on the homepage |
 | `templates/` | Page templates (Go `html/template`) |
-| `assets/` | CSS, JS, and fonts, fingerprinted at build time |
-| `static/` | Copied as-is: MicroLighter |
+| `assets/` | CSS, JS, fonts, and icons, fingerprinted at build time |
+| `static/` | Copied as-is: MicroLighter, and `favicon.ico` for clients that ask for it at the root |
 | `netlify.toml` | Netlify build settings and pinned Go version |
 | `.github/workflows/test.yml` | Runs `mage test` and `mage build -drafts` on pushes to main and on pull requests |
