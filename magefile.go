@@ -59,11 +59,12 @@ func Serve(
 func Build(
 	production *bool, // run go vet and the tests first, and fail the build if they fail
 	baseURL *string, // override site.toml's baseURL, e.g. for deploy previews
+	drafts *bool, // include posts with draft: true, e.g. for deploy previews
 ) error {
 	if production != nil && *production {
 		mg.Deps(Test)
 	}
-	opts := site.Options{Root: ".", Out: "public"}
+	opts := site.Options{Root: ".", Out: "public", Drafts: drafts != nil && *drafts}
 	if baseURL != nil {
 		opts.BaseURL = *baseURL
 	}

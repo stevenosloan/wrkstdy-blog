@@ -13,6 +13,7 @@ go tool mage serve                 # dev server on http://localhost:1313, rebuil
 go tool mage serve -drafts         # include posts with draft: true
 go tool mage build                 # write the site to public/
 go tool mage build -production     # test first, then build (what Netlify runs on deploy)
+go tool mage build -drafts         # include posts with draft: true (what PR deploy previews run)
 go tool mage test                  # go vet + tests
 go tool mage new                   # prompt for a title and start a draft post
 ```

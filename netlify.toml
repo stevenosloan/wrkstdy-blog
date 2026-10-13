@@ -5,8 +5,9 @@
 [build.environment]
   GO_VERSION = "1.24.7"
 
+# Pull request previews include drafts, so posts can be reviewed before they're published.
 [context.deploy-preview]
-  command = "go tool mage build -production -baseurl=$DEPLOY_PRIME_URL"
+  command = "go tool mage build -production -baseurl=$DEPLOY_PRIME_URL -drafts"
 
 [context.branch-deploy]
   command = "go tool mage build -production -baseurl=$DEPLOY_PRIME_URL"
