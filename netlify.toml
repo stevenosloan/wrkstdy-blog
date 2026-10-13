@@ -17,3 +17,15 @@
   for = "/assets/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
+
+# Browsers can reuse a page for an hour; a deploy can take that long to reach someone who already has it.
+# Add a rule here for any page that lands outside these paths.
+[[headers]]
+  for = "/"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"
+
+[[headers]]
+  for = "/blog/*"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"
