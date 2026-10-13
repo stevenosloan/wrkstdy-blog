@@ -11,23 +11,23 @@ import (
 
 const postTemplate = `---
 title: %q
-date: %s
 description: ""
 draft: true
 ---
 
 `
 
-// NewPost creates <root>/content/<section>/<slug>.md as a draft with starter
-// front matter, deriving the slug from the title. It returns the new file's path
-// and never overwrites an existing post.
-func NewPost(root, section, title string) (string, error) {
+// NewPost creates <root>/content/<section>/<date>-<slug>.md as a draft with
+// starter front matter, deriving the slug from the title. The date in the
+// filename is the post's date. It returns the new file's path and never
+// overwrites an existing post.
+func NewPost(root, section, title string, date time.Time) (string, error) {
 	title = strings.TrimSpace(title)
 	slug := Slugify(title)
 	if slug == "" {
 		return "", fmt.Errorf("can't make a slug from title %q", title)
 	}
-	path := filepath.Join(root, "content", filepath.FromSlash(section), slug+".md")
+	path := filepath.Join(root, "content", filepath.FromSlash(section), date.Format(time.DateOnly)+"-"+slug+".md")
 
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return "", err
@@ -39,7 +39,7 @@ func NewPost(root, section, title string) (string, error) {
 	}
 	defer f.Close()
 
-	if _, err := fmt.Fprintf(f, postTemplate, title, time.Now().Format("2006-01-02")); err != nil {
+	if _, err := fmt.Fprintf(f, postTemplate, title); err != nil {
 		return "", err
 	}
 	return path, f.Close()

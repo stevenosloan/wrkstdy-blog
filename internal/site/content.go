@@ -111,6 +111,9 @@ func (b *builder) loadContent(dir string) (*content, error) {
 	if err != nil {
 		return nil, err
 	}
+	if err := c.checkURLs(); err != nil {
+		return nil, err
+	}
 	if c.home == nil {
 		return nil, errors.New("content/_index.md is missing")
 	}
@@ -124,6 +127,37 @@ func (b *builder) loadContent(dir string) (*content, error) {
 		})
 	}
 	return c, nil
+}
+
+// splitDatePrefix splits "2026-10-12-my-post" into its date and "my-post".
+// Names without a leading date come back unchanged with a zero date.
+func splitDatePrefix(name string) (time.Time, string) {
+	const layout = "2006-01-02"
+	if len(name) <= len(layout)+1 || name[len(layout)] != '-' {
+		return time.Time{}, name
+	}
+	date, err := time.Parse(layout, name[:len(layout)])
+	if err != nil {
+		return time.Time{}, name
+	}
+	return date, name[len(layout)+1:]
+}
+
+// checkURLs fails when two pages would be written to the same URL, such as
+// posts with the same slug on different dates.
+func (c *content) checkURLs() error {
+	seen := map[string]bool{}
+	pages := append([]*Page{}, c.pages...)
+	for _, s := range c.sections {
+		pages = append(pages, s.Pages...)
+	}
+	for _, p := range pages {
+		if seen[p.URL] {
+			return fmt.Errorf("two pages share the URL %s; give one a different title or slug", p.URL)
+		}
+		seen[p.URL] = true
+	}
+	return nil
 }
 
 func (c *content) section(name string) *Section {
@@ -154,14 +188,19 @@ func (b *builder) loadPage(path string) (page *Page, slug string, err error) {
 		return nil, "", err
 	}
 
+	fileDate, fileSlug := splitDatePrefix(strings.TrimSuffix(filepath.Base(path), ".md"))
 	slug = fm.Slug
 	if slug == "" {
-		slug = strings.TrimSuffix(filepath.Base(path), ".md")
+		slug = fileSlug
+	}
+	date := fm.Date
+	if date.IsZero() {
+		date = fileDate
 	}
 	return &Page{
 		Title:       fm.Title,
 		Description: fm.Description,
-		Date:        fm.Date,
+		Date:        date,
 		Draft:       fm.Draft,
 		Content:     template.HTML(html),
 		HasCode:     strings.Contains(html, `<pre><code class="language-`),

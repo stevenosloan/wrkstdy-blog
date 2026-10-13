@@ -3,6 +3,7 @@ package site
 import (
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestSplitFrontMatter(t *testing.T) {
@@ -43,6 +44,28 @@ func TestCodeBlocks(t *testing.T) {
 		}
 		if !strings.Contains(got, tt.want) {
 			t.Errorf("render(%q) = %q, want it to contain %q", tt.src, got, tt.want)
+		}
+	}
+}
+
+func TestSplitDatePrefix(t *testing.T) {
+	tests := []struct {
+		name, date, slug string
+	}{
+		{"2026-10-12-the-long-way", "2026-10-12", "the-long-way"},
+		{"the-long-way", "", "the-long-way"},
+		{"2026-10-12", "", "2026-10-12"},
+		{"2026-13-40-bad-date", "", "2026-13-40-bad-date"},
+		{"2026-10-12x-not-a-prefix", "", "2026-10-12x-not-a-prefix"},
+	}
+	for _, tt := range tests {
+		date, slug := splitDatePrefix(tt.name)
+		var got string
+		if !date.IsZero() {
+			got = date.Format(time.DateOnly)
+		}
+		if got != tt.date || slug != tt.slug {
+			t.Errorf("splitDatePrefix(%q) = %q, %q; want %q, %q", tt.name, got, slug, tt.date, tt.slug)
 		}
 	}
 }

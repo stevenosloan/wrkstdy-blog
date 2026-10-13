@@ -22,13 +22,16 @@ Tasks live in `magefile.go`, and Mage is pinned in `go.mod` as a Go tool, so the
 ```sh
 go tool mage new
 # Title: Building a blog, on purpose
+# Date [2026-10-13]:              (enter for today, or type YYYY-MM-DD)
 ```
 
-That creates `content/blog/building-a-blog-on-purpose.md` as a draft, with the title in its front matter and a slug made from it. Remove `draft: true` to publish it.
+That creates `content/blog/2026-10-13-building-a-blog-on-purpose.md` as a draft, named with the date and a slug made from the title. Remove `draft: true` to publish it.
+
+The date in the filename is the post's date, and it's left out of the URL, so that post is served at `/blog/building-a-blog-on-purpose/`. To re-date a post, rename the file, or set `date:` in its front matter, which wins over the filename.
 
 Pass `-section` to put it somewhere other than `content/blog/`, e.g. `go tool mage new -section=notes`.
 
-It won't overwrite an existing post, so if two titles give the same slug, change the title.
+It won't overwrite an existing post, and the build fails if two posts end up with the same slug (say, the same title on different days). Change the title, or set `slug:` in the front matter.
 
 - Fenced code blocks with a language (` ```go `) are highlighted in the browser by
   [MicroLighter](https://github.com/davatron5000/microlighter), vendored in `static/vendor/microlighter/`.
@@ -37,7 +40,7 @@ It won't overwrite an existing post, so if two titles give the same slug, change
 
 ## Styleguide
 
-`/blog/styleguide/` (from `content/blog/styleguide.md`) shows the palette, type, and every styled element. Check it after changing `main.css`. It's a draft, so run `go tool mage serve -drafts` to see it.
+`/blog/styleguide/` (from `content/blog/2026-10-11-styleguide.md`) shows the palette, type, and every styled element. Check it after changing `main.css`. It's a draft, so run `go tool mage serve -drafts` to see it.
 
 ## How the build works
 
@@ -45,7 +48,7 @@ It won't overwrite an existing post, so if two titles give the same slug, change
 
 1. Read `site.toml` and `data/projects.toml`.
 2. Parse `templates/`: `base.html` and `partials/` once, then one copy per page kind (`home`, `single`), each defining its own `main` block.
-3. Walk `content/`. Each `.md` file has YAML front matter split off and its body rendered by [goldmark](https://github.com/yuin/goldmark). `_index.md` makes a folder a section (posts in `content/blog/` are served under `/blog/`).
+3. Walk `content/`. Each `.md` file has YAML front matter split off and its body rendered by [goldmark](https://github.com/yuin/goldmark). `_index.md` makes a folder a section (posts in `content/blog/` are served under `/blog/`). A leading `YYYY-MM-DD-` in a filename becomes the page's date and is dropped from its URL.
 4. Wipe `public/`, copy `static/` into it, and write each file in `assets/` under a content-hashed name.
 5. Render every page.
 

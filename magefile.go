@@ -7,6 +7,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"io"
 	"io/fs"
 	"net/http"
 	"os"
@@ -77,29 +78,53 @@ func Test() error {
 	return sh.RunV("go", "test", "./...")
 }
 
-// New asks for a title and creates a draft post slugged from it.
+// New asks for a title and a date (default today) and creates a draft post slugged from the title.
 func New(
 	section *string, // folder under content/ to create the post in (default blog)
 ) error {
-	fmt.Print("Title: ")
-	title, err := bufio.NewReader(os.Stdin).ReadString('\n')
-	if err != nil && title == "" {
+	in := bufio.NewReader(os.Stdin)
+	title, err := prompt(in, "Title: ")
+	if err != nil {
 		return err
 	}
-	title = strings.TrimSpace(title)
 	if title == "" {
 		return errors.New("a title is required")
 	}
+
+	today := time.Now().Format(time.DateOnly)
+	answer, err := prompt(in, "Date ["+today+"]: ")
+	if err != nil {
+		return err
+	}
+	if answer == "" {
+		answer = today
+	}
+	date, err := time.Parse(time.DateOnly, answer)
+	if err != nil {
+		return fmt.Errorf("date %q isn't YYYY-MM-DD", answer)
+	}
+
 	dir := "blog"
 	if section != nil && *section != "" {
 		dir = *section
 	}
-	path, err := site.NewPost(".", dir, title)
+	path, err := site.NewPost(".", dir, title, date)
 	if err != nil {
 		return err
 	}
 	fmt.Printf("created %s\n", path)
 	return nil
+}
+
+// prompt prints label and returns the trimmed line typed in reply. Hitting
+// enter, or reaching the end of piped input, returns "".
+func prompt(in *bufio.Reader, label string) (string, error) {
+	fmt.Print(label)
+	line, err := in.ReadString('\n')
+	if err != nil && err != io.EOF {
+		return "", err
+	}
+	return strings.TrimSpace(line), nil
 }
 
 func build(opts site.Options) error {

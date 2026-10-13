@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestSlugify(t *testing.T) {
@@ -24,11 +25,12 @@ func TestSlugify(t *testing.T) {
 
 func TestNewPost(t *testing.T) {
 	root := t.TempDir()
-	path, err := NewPost(root, "blog", "Hello, world")
+	date := time.Date(2026, 10, 12, 0, 0, 0, 0, time.UTC)
+	path, err := NewPost(root, "blog", "Hello, world", date)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if want := filepath.Join(root, "content", "blog", "hello-world.md"); path != want {
+	if want := filepath.Join(root, "content", "blog", "2026-10-12-hello-world.md"); path != want {
 		t.Errorf("path = %q, want %q", path, want)
 	}
 	body, err := os.ReadFile(path)
@@ -38,7 +40,7 @@ func TestNewPost(t *testing.T) {
 	if !strings.Contains(string(body), `title: "Hello, world"`) {
 		t.Errorf("front matter missing title:\n%s", body)
 	}
-	if _, err := NewPost(root, "blog", "Hello world"); err == nil {
+	if _, err := NewPost(root, "blog", "Hello world", date); err == nil {
 		t.Error("second post with the same slug should fail, not overwrite")
 	}
 }
