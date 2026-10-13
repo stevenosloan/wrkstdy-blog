@@ -7,7 +7,7 @@ The homepage and blog for wrkstdy.com, built by a small Go program in this repo 
 ## Run it locally
 
 ```sh
-brew install go                    # Go 1.24 or newer; Netlify uses the version in netlify.toml
+brew install go                    # Go 1.27 or newer; Netlify uses the version in netlify.toml
 go tool mage                       # list tasks
 go tool mage serve                 # dev server on http://localhost:1313, rebuilds on save
 go tool mage serve -drafts         # include posts with draft: true
@@ -67,7 +67,7 @@ It won't overwrite an existing post, and the build fails if two posts end up wit
 | `content/404.md` | The not-found page, written to `/404.html`, which Netlify serves for any missing path |
 | `data/projects.toml` | Project links listed on the homepage |
 | `templates/` | Page templates (Go `html/template`) |
-| `assets/` | CSS, JS, fonts, and icons, fingerprinted at build time |
+| `assets/` | CSS, JS, fonts, and icons, fingerprinted at build time (CSS and JS are minified first) |
 | `static/` | Copied as-is: MicroLighter, and `favicon.ico` for clients that ask for it at the root |
 | `netlify.toml` | Netlify build settings and pinned Go version |
 | `.github/workflows/test.yml` | Runs `mage test` and `mage build -drafts` on pushes to main and on pull requests |

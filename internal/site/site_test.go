@@ -1,6 +1,8 @@
 package site
 
 import (
+	"crypto/sha256"
+	"encoding/base64"
 	"os"
 	"path/filepath"
 	"strings"
@@ -90,13 +92,44 @@ func TestFingerprintDirRewritesCSSURLs(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if want := `url("` + assets["fonts/a.woff2"].URL + `")`; !strings.Contains(string(css), want) {
+	if want := assets["fonts/a.woff2"].URL; !strings.Contains(string(css), want) {
 		t.Errorf("css = %q, want it to contain %q", css, want)
 	}
 
 	write("css/main.css", `@font-face { src: url("/assets/fonts/missing.woff2"); }`)
 	if _, err := fingerprintDir(src, t.TempDir(), "assets"); err == nil {
 		t.Error("want an error for a url() to a missing asset")
+	}
+}
+
+func TestFingerprintDirMinifies(t *testing.T) {
+	src, out := t.TempDir(), t.TempDir()
+	if err := writeFile(filepath.Join(src, "css/main.css"), []byte("/* comment */\nbody {\n  color: red;\n}\n")); err != nil {
+		t.Fatal(err)
+	}
+	if err := writeFile(filepath.Join(src, "js/main.js"), []byte("// comment\nconst greeting = \"hi\";\nconsole.log(greeting);\n")); err != nil {
+		t.Fatal(err)
+	}
+
+	assets, err := fingerprintDir(src, out, "assets")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for rel, want := range map[string]string{
+		"css/main.css": "body{color:red}",
+		"js/main.js":   `const greeting="hi";console.log(greeting)`,
+	} {
+		got, err := os.ReadFile(filepath.Join(out, filepath.FromSlash(assets[rel].URL)))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if string(got) != want {
+			t.Errorf("%s = %q, want %q", rel, got, want)
+		}
+		sum := sha256.Sum256(got)
+		if integrity := "sha256-" + base64.StdEncoding.EncodeToString(sum[:]); assets[rel].Integrity != integrity {
+			t.Errorf("%s integrity = %q, want the hash of the minified file, %q", rel, assets[rel].Integrity, integrity)
+		}
 	}
 }
 
