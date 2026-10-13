@@ -64,7 +64,7 @@ func splitFrontMatter(src []byte) (meta, body []byte, err error) {
 type content struct {
 	home     *Page
 	sections map[string]*Section
-	pages    []*Page // pages outside any section, like /styleguide/
+	pages    []*Page // pages outside any section, like content/about.md at /about/
 }
 
 func (b *builder) loadContent(dir string) (*content, error) {

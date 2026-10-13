@@ -37,7 +37,7 @@ It won't overwrite an existing post, so if two titles give the same slug, change
 
 ## Styleguide
 
-`/styleguide/` (from `content/styleguide.md`) shows the palette, type, and every styled element. Check it after changing `main.css`.
+`/blog/styleguide/` (from `content/blog/styleguide.md`) shows the palette, type, and every styled element. Check it after changing `main.css`. It's a draft, so run `go tool mage serve -drafts` to see it.
 
 ## How the build works
 

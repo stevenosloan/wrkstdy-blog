@@ -1,8 +1,8 @@
 ---
 title: "Styleguide"
-description: "Every element the site styles, in one place."
-sitemap:
-  disable: true
+date: 2026-10-11
+description: "A full example of markdown formatting."
+draft: true
 ---
 
 ## Palette

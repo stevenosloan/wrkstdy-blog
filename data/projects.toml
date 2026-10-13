@@ -3,5 +3,5 @@
 
 [[projects]]
   name = "wrkstdy.com"
-  url = "/blog/hello-world/"
-  description = "This site. Hugo, markdown, and a forest palette."
+  url = "/"
+  description = "This site. Golang, markdown, and a forest palette."
