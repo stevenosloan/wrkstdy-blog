@@ -4,6 +4,9 @@
 <title>{{ if eq .Page.URL "/" }}{{ .Site.Title }}{{ else }}{{ .Page.Title }} · {{ .Site.Title }}{{ end }}</title>
 <meta name="description" content="{{ or .Page.Description .Site.Description }}">
 <link rel="canonical" href="{{ .Site.AbsURL .Page.URL }}">
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="icon" href="{{ (.Site.Asset "icons/favicon.svg").URL }}" type="image/svg+xml">
+<link rel="apple-touch-icon" href="{{ (.Site.Asset "icons/apple-touch-icon.png").URL }}">
 <link rel="preload" href="{{ (.Site.Asset "fonts/fira-sans-latin-400-normal.woff2").URL }}" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="{{ (.Site.Asset "fonts/fira-code-latin-500-normal.woff2").URL }}" as="font" type="font/woff2" crossorigin>
 {{ $css := .Site.Asset "css/main.css" -}}

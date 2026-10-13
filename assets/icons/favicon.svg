@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <style>
+    rect { fill: #f5f2e9; }
+    path { fill: #3f6b3a; stroke: #3f6b3a; stroke-width: 70; stroke-linejoin: round; }
+    @media (prefers-color-scheme: dark) {
+      rect { fill: #141b16; }
+      path { fill: #9cc283; stroke: #9cc283; }
+    }
+  </style>
+  <rect width="100" height="100" rx="22"/>
+  <!-- "~/" from Fira Code SemiBold, outlined and thickened with a stroke so it holds up at 16px; the slash is pulled in 100 units to tighten it up at tab size -->
+  <path transform="translate(7.75 76.1) scale(.037 -.037)" d="M408 839Q482 839 536 809Q590 779 632.5 739Q675 699 714.5 669Q754 639 800 639Q858 639 901.5 682.5Q945 726 985 801L1142 727Q1104 647 1056.5 580.5Q1009 514 945 473.5Q881 433 792 433Q721 433 667.5 463Q614 493 571 533Q528 573 487 603Q446 633 400 633Q340 633 297 589Q254 545 215 473L58 545Q96 620 142.5 687.5Q189 755 253.5 797Q318 839 408 839ZM1382 -218 1174 -123 2020 1629 2226 1532Z"/>
+</svg>
