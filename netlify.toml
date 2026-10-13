@@ -12,6 +12,12 @@
 [context.branch-deploy]
   command = "go tool mage build -production -baseurl=$DEPLOY_PRIME_URL"
 
+# Purges Cloudflare's whole cache after each production deploy, so new pages don't wait out the edge TTL.
+# Needs CLOUDFLARE_ZONE_ID and CLOUDFLARE_API_TOKEN set in Netlify. Production only: previews and branch
+# deploys don't change what's at wrkstdy.com, so they shouldn't empty its cache.
+[[context.production.plugins]]
+  package = "netlify-purge-cloudflare-on-deploy"
+
 # Everything under /assets/ carries a content hash in its name.
 [[headers]]
   for = "/assets/*"
