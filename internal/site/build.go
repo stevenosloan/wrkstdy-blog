@@ -97,7 +97,7 @@ func Build(opts Options) (int, error) {
 	if err := copyDir(filepath.Join(root, "static"), opts.Out); err != nil {
 		return 0, fmt.Errorf("copying static: %w", err)
 	}
-	assets, err := fingerprintDir(filepath.Join(root, "assets"), opts.Out)
+	assets, err := fingerprintDir(filepath.Join(root, "assets"), opts.Out, "assets")
 	if err != nil {
 		return 0, fmt.Errorf("fingerprinting assets: %w", err)
 	}

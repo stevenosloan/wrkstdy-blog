@@ -52,7 +52,7 @@ It won't overwrite an existing post, and the build fails if two posts end up wit
 1. Read `site.toml` and `data/projects.toml`.
 2. Parse `templates/`: `base.html` and `partials/` once, then one copy per page kind (`home`, `single`), each defining its own `main` block.
 3. Walk `content/`. Each `.md` file has YAML front matter split off and its body rendered by [goldmark](https://github.com/yuin/goldmark). `_index.md` makes a folder a section (posts in `content/blog/` are served under `/blog/`). A leading `YYYY-MM-DD-` in a filename becomes the page's date and is dropped from its URL.
-4. Wipe `public/`, copy `static/` into it, and write each file in `assets/` under a content-hashed name.
+4. Wipe `public/`, copy `static/` into it, and write each file in `assets/` under a content-hashed name in `public/assets/`.
 5. Render every page.
 
 ## Layout
@@ -66,7 +66,7 @@ It won't overwrite an existing post, and the build fails if two posts end up wit
 | `content/blog/` | Blog posts, served under `/blog/` |
 | `data/projects.toml` | Project links listed on the homepage |
 | `templates/` | Page templates (Go `html/template`) |
-| `assets/` | CSS and JS, fingerprinted at build time |
-| `static/` | Copied as-is: fonts and MicroLighter |
+| `assets/` | CSS, JS, and fonts, fingerprinted at build time |
+| `static/` | Copied as-is: MicroLighter |
 | `netlify.toml` | Netlify build settings and pinned Go version |
 | `.github/workflows/test.yml` | Runs `mage test` and `mage build -drafts` on pushes to main and on pull requests |

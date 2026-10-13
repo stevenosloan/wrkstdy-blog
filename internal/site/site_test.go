@@ -1,6 +1,8 @@
 package site
 
 import (
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -67,5 +69,33 @@ func TestSplitDatePrefix(t *testing.T) {
 		if got != tt.date || slug != tt.slug {
 			t.Errorf("splitDatePrefix(%q) = %q, %q; want %q, %q", tt.name, got, slug, tt.date, tt.slug)
 		}
+	}
+}
+
+func TestFingerprintDirRewritesCSSURLs(t *testing.T) {
+	src, out := t.TempDir(), t.TempDir()
+	write := func(rel, data string) {
+		if err := writeFile(filepath.Join(src, rel), []byte(data)); err != nil {
+			t.Fatal(err)
+		}
+	}
+	write("fonts/a.woff2", "font")
+	write("css/main.css", `@font-face { src: url("/assets/fonts/a.woff2"); }`)
+
+	assets, err := fingerprintDir(src, out, "assets")
+	if err != nil {
+		t.Fatal(err)
+	}
+	css, err := os.ReadFile(filepath.Join(out, filepath.FromSlash(assets["css/main.css"].URL)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if want := `url("` + assets["fonts/a.woff2"].URL + `")`; !strings.Contains(string(css), want) {
+		t.Errorf("css = %q, want it to contain %q", css, want)
+	}
+
+	write("css/main.css", `@font-face { src: url("/assets/fonts/missing.woff2"); }`)
+	if _, err := fingerprintDir(src, t.TempDir(), "assets"); err == nil {
+		t.Error("want an error for a url() to a missing asset")
 	}
 }

@@ -12,18 +12,8 @@
 [context.branch-deploy]
   command = "go tool mage build -production -baseurl=$DEPLOY_PRIME_URL"
 
-# Fonts never change, and css/ and js/ files carry a content hash in their names.
+# Everything under /assets/ carries a content hash in its name.
 [[headers]]
-  for = "/fonts/*"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
-
-[[headers]]
-  for = "/css/*"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
-
-[[headers]]
-  for = "/js/*"
+  for = "/assets/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
