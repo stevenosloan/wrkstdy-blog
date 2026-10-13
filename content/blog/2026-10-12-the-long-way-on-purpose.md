@@ -1,6 +1,5 @@
 ---
 title: "Building a blog the long way, on purpose"
-date: 2026-10-12
 description: "Fresh off Mailchimp, I'm building a deliberately overengineered blog to learn Go and try out new ways of working with AI."
 draft: true
 ---

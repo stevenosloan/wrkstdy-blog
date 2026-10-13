@@ -1,6 +1,5 @@
 ---
 title: "Styleguide"
-date: 2026-10-11
 description: "A full example of markdown formatting."
 draft: true
 ---
