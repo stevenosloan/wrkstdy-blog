@@ -2,6 +2,8 @@
 
 The homepage and blog for wrkstdy.com, built by a small Go program in this repo and deployed on Netlify.
 
+[![Netlify Status](https://api.netlify.com/api/v1/badges/4162cdb1-453b-4d6e-bdca-660630b8a539/deploy-status)](https://app.netlify.com/projects/wrkstdy-blog/deploys)
+
 ## Run it locally
 
 ```sh
@@ -11,6 +13,7 @@ go tool mage serve                 # dev server on http://localhost:1313, rebuil
 go tool mage serve -drafts         # include posts with draft: true
 go tool mage build                 # write the site to public/
 go tool mage build -production     # test first, then build (what Netlify runs on deploy)
+go tool mage build -drafts         # include posts with draft: true (what PR deploy previews run)
 go tool mage test                  # go vet + tests
 go tool mage new                   # prompt for a title and start a draft post
 ```
@@ -66,3 +69,4 @@ It won't overwrite an existing post, and the build fails if two posts end up wit
 | `assets/` | CSS and JS, fingerprinted at build time |
 | `static/` | Copied as-is: fonts and MicroLighter |
 | `netlify.toml` | Netlify build settings and pinned Go version |
+| `.github/workflows/test.yml` | Runs `mage test` and `mage build -drafts` on pushes to main and on pull requests |
