@@ -1,12 +1,12 @@
 ---
 title: "Building a blog the long way, on purpose"
 description: "Fresh off Mailchimp, I'm building a deliberately overengineered blog to learn Go and try out new ways of working with AI."
-draft: true
+draft: false
 ---
 
 I'm writing a blog.
 
-*Narrator: you may be wondering how I found myself here.*
+> Narrator: you may be wondering how I found myself here.
 
 After 14+ years at Mailchimp, I have something I haven't had in a long while --- time to poke at things just to see how they work. I want somewhere to keep track of that, so here we are: a blog.
 
