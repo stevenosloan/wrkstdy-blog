@@ -60,11 +60,15 @@ func splitFrontMatter(src []byte) (meta, body []byte, err error) {
 	return meta, body, nil
 }
 
+// notFoundURL is where Netlify looks for the page it serves for missing paths.
+const notFoundURL = "/404.html"
+
 // content is everything loaded from the content directory.
 type content struct {
 	home     *Page
 	sections map[string]*Section
 	pages    []*Page // pages outside any section, like content/about.md at /about/
+	notFound *Page   // content/404.md, written to /404.html for Netlify to serve on misses
 }
 
 func (b *builder) loadContent(dir string) (*content, error) {
@@ -98,6 +102,11 @@ func (b *builder) loadContent(dir string) (*content, error) {
 			return nil
 		}
 
+		if rel == "404.md" {
+			page.URL = notFoundURL
+			c.notFound = page
+			return nil
+		}
 		if section == "" {
 			page.URL = "/" + slug + "/"
 			c.pages = append(c.pages, page)
