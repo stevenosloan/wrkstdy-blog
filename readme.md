@@ -8,10 +8,11 @@ The homepage and blog for wrkstdy.com, built by a small Go program in this repo 
 brew install go                    # Go 1.24 or newer; Netlify uses the version in netlify.toml
 go tool mage                       # list tasks
 go tool mage serve                 # dev server on http://localhost:1313, rebuilds on save
-go run ./cmd/wrkstdy serve -drafts # include posts with draft: true
+go tool mage serve -drafts         # include posts with draft: true
 go tool mage build                 # write the site to public/
+go tool mage build -production     # test first, then build (what Netlify runs on deploy)
 go tool mage test                  # go vet + tests
-go tool mage check                 # test, then build (what Netlify runs)
+go tool mage new                   # prompt for a title and start a draft post
 ```
 
 Tasks live in `magefile.go`, and Mage is pinned in `go.mod` as a Go tool, so there's nothing to install.
@@ -19,10 +20,15 @@ Tasks live in `magefile.go`, and Mage is pinned in `go.mod` as a Go tool, so the
 ## Write a post
 
 ```sh
-go run ./cmd/wrkstdy new blog/my-post
+go tool mage new
+# Title: Building a blog, on purpose
 ```
 
-That creates `content/blog/my-post.md` as a draft. Remove `draft: true` to publish it.
+That creates `content/blog/building-a-blog-on-purpose.md` as a draft, with the title in its front matter and a slug made from it. Remove `draft: true` to publish it.
+
+Pass `-section` to put it somewhere other than `content/blog/`, e.g. `go tool mage new -section=notes`.
+
+It won't overwrite an existing post, so if two titles give the same slug, change the title.
 
 - Fenced code blocks with a language (` ```go `) are highlighted in the browser by
   [MicroLighter](https://github.com/davatron5000/microlighter), vendored in `static/vendor/microlighter/`.
@@ -47,9 +53,8 @@ That creates `content/blog/my-post.md` as a draft. Remove `draft: true` to publi
 
 | Path | What it is |
 | --- | --- |
-| `cmd/wrkstdy/` | The command: `build`, `serve`, `new` |
-| `magefile.go` | Dev tasks (serve, build, test, check) run with `go tool mage` |
-| `internal/site/` | The generator: content loading, markdown, templates, assets |
+| `magefile.go` | Every task (serve, build, test, new), run with `go tool mage` |
+| `internal/site/` | The generator: content loading, markdown, templates, assets, new posts |
 | `site.toml` | Site title, base URL, and menu |
 | `content/_index.md` | Homepage intro text |
 | `content/blog/` | Blog posts, served under `/blog/` |
