@@ -3,7 +3,7 @@
   publish = "public"
 
 [build.environment]
-  GO_VERSION = "1.24.7"
+  GO_VERSION = "1.27.2"
 
 # Pull request previews include drafts, so posts can be reviewed before they're published.
 [context.deploy-preview]
