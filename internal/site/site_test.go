@@ -99,3 +99,23 @@ func TestFingerprintDirRewritesCSSURLs(t *testing.T) {
 		t.Error("want an error for a url() to a missing asset")
 	}
 }
+
+func TestBuildWritesNotFoundPage(t *testing.T) {
+	out := t.TempDir()
+	if _, err := Build(Options{Root: "../..", Out: out}); err != nil {
+		t.Fatal(err)
+	}
+	html, err := os.ReadFile(filepath.Join(out, "404.html"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(html), `<meta name="robots" content="noindex">`) {
+		t.Error("404.html should be noindex")
+	}
+	if strings.Contains(string(html), `rel="canonical"`) {
+		t.Error("404.html shouldn't claim a canonical URL")
+	}
+	if _, err := os.Stat(filepath.Join(out, "404", "index.html")); err == nil {
+		t.Error("404.md should only be written to /404.html, not /404/")
+	}
+}

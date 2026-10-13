@@ -64,6 +64,7 @@ It won't overwrite an existing post, and the build fails if two posts end up wit
 | `site.toml` | Site title, base URL, and menu |
 | `content/_index.md` | Homepage intro text |
 | `content/blog/` | Blog posts, served under `/blog/` |
+| `content/404.md` | The not-found page, written to `/404.html`, which Netlify serves for any missing path |
 | `data/projects.toml` | Project links listed on the homepage |
 | `templates/` | Page templates (Go `html/template`) |
 | `assets/` | CSS, JS, fonts, and icons, fingerprinted at build time |

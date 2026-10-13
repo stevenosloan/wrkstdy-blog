@@ -120,6 +120,11 @@ func Build(opts Options) (int, error) {
 	if err := render("home", view{Page: c.home}); err != nil {
 		return 0, err
 	}
+	if c.notFound != nil {
+		if err := render("single", view{Page: c.notFound}); err != nil {
+			return 0, err
+		}
+	}
 	for _, p := range c.pages {
 		if err := render("single", view{Page: p}); err != nil {
 			return 0, err
@@ -136,7 +141,10 @@ func Build(opts Options) (int, error) {
 }
 
 func (b *builder) renderPage(kind string, v view) error {
-	path := filepath.Join(b.opts.Out, filepath.FromSlash(v.Page.URL), "index.html")
+	path := filepath.Join(b.opts.Out, filepath.FromSlash(v.Page.URL))
+	if !strings.HasSuffix(v.Page.URL, ".html") {
+		path = filepath.Join(path, "index.html")
+	}
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return err
 	}
