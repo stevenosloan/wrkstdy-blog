@@ -4,45 +4,78 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/hex"
+	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
 
 // Asset is a file from assets/ written under a content-hashed name, so browsers
 // can cache it forever and still pick up changes.
 type Asset struct {
-	URL       string // like "/css/main.3f2a9c1b04de.css"
+	URL       string // like "/assets/css/main.3f2a9c1b04de.css"
 	Integrity string // Subresource Integrity hash for the integrity="" attribute
 }
 
-func fingerprintDir(src, out string) (map[string]Asset, error) {
-	assets := map[string]Asset{}
+// fingerprintDir writes every file under src into out/prefix under a hashed name.
+// CSS goes last, so its url("/prefix/...") references can be rewritten to the
+// hashed names before the CSS itself is hashed.
+func fingerprintDir(src, out, prefix string) (map[string]Asset, error) {
+	var files, css []string
 	err := filepath.WalkDir(src, func(path string, d fs.DirEntry, err error) error {
-		if err != nil || d.IsDir() {
-			return err
-		}
-		data, err := os.ReadFile(path)
-		if err != nil {
+		if err != nil || d.IsDir() || d.Name() == ".DS_Store" {
 			return err
 		}
 		rel, _ := filepath.Rel(src, path)
 		rel = filepath.ToSlash(rel)
+		if filepath.Ext(rel) == ".css" {
+			css = append(css, rel)
+		} else {
+			files = append(files, rel)
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	assets := map[string]Asset{}
+	urlRef := regexp.MustCompile(`url\("/` + regexp.QuoteMeta(prefix) + `/([^"]+)"\)`)
+	for _, rel := range append(files, css...) {
+		data, err := os.ReadFile(filepath.Join(src, filepath.FromSlash(rel)))
+		if err != nil {
+			return nil, err
+		}
+		if filepath.Ext(rel) == ".css" {
+			var missing string
+			data = urlRef.ReplaceAllFunc(data, func(m []byte) []byte {
+				ref := string(urlRef.FindSubmatch(m)[1])
+				a, ok := assets[ref]
+				if !ok {
+					missing = ref
+					return m
+				}
+				return []byte(`url("` + a.URL + `")`)
+			})
+			if missing != "" {
+				return nil, fmt.Errorf("%s: no asset %q in assets/", rel, missing)
+			}
+		}
 
 		sum := sha256.Sum256(data)
 		ext := filepath.Ext(rel)
-		name := strings.TrimSuffix(rel, ext) + "." + hex.EncodeToString(sum[:])[:12] + ext
+		name := prefix + "/" + strings.TrimSuffix(rel, ext) + "." + hex.EncodeToString(sum[:])[:12] + ext
 		if err := writeFile(filepath.Join(out, filepath.FromSlash(name)), data); err != nil {
-			return err
+			return nil, err
 		}
 		assets[rel] = Asset{
 			URL:       "/" + name,
 			Integrity: "sha256-" + base64.StdEncoding.EncodeToString(sum[:]),
 		}
-		return nil
-	})
-	return assets, err
+	}
+	return assets, nil
 }
 
 // copyDir copies every file under src into out, keeping relative paths.
