@@ -10,7 +10,7 @@ The homepage and blog for wrkstdy.com, built by a small Go program in this repo 
 brew install go node               # Go 1.27 or newer (Netlify uses the version in netlify.toml), and Node for the JS dependencies
 npm install                        # mermaid and microlighter, which esbuild bundles into the site
 go tool mage                       # list tasks
-go tool mage serve                 # dev server on http://localhost:1313, rebuilds on save
+go tool mage serve                 # dev server on http://localhost:1313, rebuilds on save (JS and CSS unminified, with source maps)
 go tool mage serve -drafts         # include posts with draft: true
 go tool mage build                 # write the site to public/
 go tool mage build -production     # test first, then build (what Netlify runs on deploy)
@@ -53,7 +53,7 @@ It won't overwrite an existing post, and the build fails if two posts end up wit
 1. Read `site.toml` and `data/projects.toml`.
 2. Parse `templates/`: `base.html` and `partials/` once, then one copy per page kind (`home`, `single`), each defining its own `main` block.
 3. Walk `content/`. Each `.md` file has YAML front matter split off and its body rendered by [goldmark](https://github.com/yuin/goldmark). `_index.md` makes a folder a section (posts in `content/blog/` are served under `/blog/`). A leading `YYYY-MM-DD-` in a filename becomes the page's date and is dropped from its URL.
-4. Wipe `public/`, copy `static/` into it, and write each file in `assets/` under a content-hashed name in `public/assets/`. [esbuild](https://esbuild.github.io/) (`internal/site/bundle.go`) builds the CSS and JS: each file in `assets/css/` and `assets/js/` is an entry point, minified, with JS bundled with what it imports from `node_modules/` and code-split. Fonts referenced by `url()` in the CSS are hashed by esbuild and the `url()` rewritten. Icons and anything else are hashed as they are.
+4. Wipe `public/`, copy `static/` into it, and write each file in `assets/` under a content-hashed name in `public/assets/`. [esbuild](https://esbuild.github.io/) (`internal/site/bundle.go`) builds the CSS and JS: each file in `assets/css/` and `assets/js/` is an entry point, minified, with JS bundled with what it imports from `node_modules/` and code-split. `serve` keeps one esbuild context between rebuilds and writes unminified files with source maps and unhashed names, so devtools breakpoints survive a rebuild. Fonts referenced by `url()` in the CSS are hashed by esbuild and the `url()` rewritten. Icons and anything else are hashed as they are.
 5. Render every page.
 
 ## Layout

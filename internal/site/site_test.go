@@ -103,7 +103,7 @@ func TestBundleAssetsCSS(t *testing.T) {
 		}
 	}
 
-	assets, err := bundleAssets(root, out)
+	assets, err := NewBundler(root, out, false).Build()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -129,7 +129,7 @@ func TestBundleAssetsCSS(t *testing.T) {
 	if err := writeFile(filepath.Join(root, "assets/css/main.css"), []byte(`@font-face { src: url("../fonts/missing.woff2"); }`)); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := bundleAssets(root, t.TempDir()); err == nil {
+	if _, err := NewBundler(root, t.TempDir(), false).Build(); err == nil {
 		t.Error("want an error for a url() to a missing font")
 	}
 }
@@ -148,7 +148,7 @@ func TestBundleAssetsJS(t *testing.T) {
 		}
 	}
 
-	assets, err := bundleAssets(root, out)
+	assets, err := NewBundler(root, out, false).Build()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -170,12 +170,60 @@ func TestBundleAssetsJS(t *testing.T) {
 	}
 }
 
+func TestBundlerDev(t *testing.T) {
+	root, out := t.TempDir(), t.TempDir()
+	write := func(name, body string) {
+		t.Helper()
+		if err := writeFile(filepath.Join(root, filepath.FromSlash(name)), []byte(body)); err != nil {
+			t.Fatal(err)
+		}
+	}
+	write("assets/js/main.js", "console.log('one');\n")
+	write("node_modules/.keep", "")
+
+	b := NewBundler(root, out, true)
+	defer b.Close()
+	assets, err := b.Build()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := assets["js/main.js"].URL; got != "/assets/js/main.js" {
+		t.Fatalf("URL = %q, want a stable name", got)
+	}
+	read := func(name string) string {
+		t.Helper()
+		data, err := os.ReadFile(filepath.Join(out, filepath.FromSlash(name)))
+		if err != nil {
+			t.Fatal(err)
+		}
+		return string(data)
+	}
+	if got := read("assets/js/main.js"); !strings.Contains(got, `console.log("one");`) || !strings.Contains(got, "sourceMappingURL=/assets/js/main.js.map") {
+		t.Errorf("main.js = %q, want it unminified and linked to a source map", got)
+	}
+	read("assets/js/main.js.map")
+
+	// A rebuild sees edits, and an entry point added since the first build.
+	write("assets/js/main.js", "console.log('two');\n")
+	write("assets/js/extra.js", "console.log('extra');\n")
+	assets, err = b.Build()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := read("assets/js/main.js"); !strings.Contains(got, "two") {
+		t.Errorf("main.js = %q, want the edit", got)
+	}
+	if _, ok := assets["js/extra.js"]; !ok {
+		t.Errorf("assets = %v, want one for the new js/extra.js", assets)
+	}
+}
+
 func TestBundleAssetsJSNeedsNodeModules(t *testing.T) {
 	root := t.TempDir()
 	if err := writeFile(filepath.Join(root, "assets/js/main.js"), []byte("console.log(1)")); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := bundleAssets(root, t.TempDir()); err == nil || !strings.Contains(err.Error(), "npm") {
+	if _, err := NewBundler(root, t.TempDir(), false).Build(); err == nil || !strings.Contains(err.Error(), "npm") {
 		t.Errorf("err = %v, want one that says to run npm", err)
 	}
 }

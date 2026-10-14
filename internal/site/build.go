@@ -19,6 +19,10 @@ type Options struct {
 	Out     string // output folder, wiped and rewritten on every build
 	Drafts  bool   // include pages with draft: true
 	BaseURL string // overrides baseURL from site.toml, for deploy previews and local serving
+
+	// Bundler builds the CSS and JS. Leave it nil for a one-off production build;
+	// a dev server passes one it keeps, so rebuilds are incremental.
+	Bundler *Bundler
 }
 
 // Site is what templates see as .Site.
@@ -102,7 +106,12 @@ func Build(opts Options) (int, error) {
 	if err != nil {
 		return 0, fmt.Errorf("fingerprinting assets: %w", err)
 	}
-	built, err := bundleAssets(root, opts.Out)
+	bundler := opts.Bundler
+	if bundler == nil {
+		bundler = NewBundler(root, opts.Out, false)
+		defer bundler.Close()
+	}
+	built, err := bundler.Build()
 	if err != nil {
 		return 0, fmt.Errorf("bundling assets: %w", err)
 	}

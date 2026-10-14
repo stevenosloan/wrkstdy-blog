@@ -18,7 +18,7 @@ type Asset struct {
 }
 
 // fingerprintDir writes every file under src that esbuild doesn't build (see
-// bundleAssets) into out/prefix under a hashed name: icons, and whatever else is
+// Bundler) into out/prefix under a hashed name: icons, and whatever else is
 // dropped in assets/.
 func fingerprintDir(src, out, prefix string) (map[string]Asset, error) {
 	assets := map[string]Asset{}
