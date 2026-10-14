@@ -1,12 +1,20 @@
-{{- /* Type specimen for the site's two families. */ -}}
+{{- /* Type specimen for the site's two families. Both are variable fonts, so each
+       samples a few steps across the weight range it ships (see scripts/fonts.sh). */ -}}
 <div class="specimen">
-  {{- range list (dict "name" "Fira Sans" "var" "sans") (dict "name" "Fira Code" "var" "mono") }}
-  <div class="specimen-family" style="font-family: var(--{{ .var }})">
-    <p class="muted"><code>--{{ .var }}</code> · {{ .name }}</p>
-    {{- range list 400 500 600 }}
+  {{- range list
+    (dict "name" "Fira Sans" "source" "Firava" "var" "sans" "range" "300–500" "weights" (list 300 350 400 450 500))
+    (dict "name" "Fira Code" "source" "Fontsource" "var" "mono" "range" "300–700" "weights" (list 300 400 500 600 700)) }}
+  <div class="specimen-family" style="--font-family: var(--{{ .var }})">
+    <p class="muted"><code>--{{ .var }}</code> · {{ .name }} ({{ .source }}) · variable, weights {{ .range }}</p>
+    {{- range .weights }}
     <p style="font-weight: {{ . }}">{{ . }} · The quick brown fox jumps over the lazy dog.</p>
     {{- end }}
-    {{ if eq .var "mono" }}<p>Ligatures: -&gt; =&gt; != === &lt;= &gt;= :: |&gt; /* */</p>{{ else }}<p><em>Italic: notes from the workbench.</em></p>{{ end }}
+    {{- if eq .var "mono" }}
+    <p>Ligatures: -&gt; =&gt; != === &lt;= &gt;= :: |&gt; /* */</p>
+    {{- else }}
+    <p style="font-weight: 300"><em>300 italic · notes from the workbench.</em></p>
+    <p style="font-weight: 500"><em>500 italic · notes from the workbench.</em></p>
+    {{- end }}
   </div>
   {{- end }}
 </div>

@@ -1,0 +1,38 @@
+:root {
+    --type-scale: 1.25;
+
+    --font-size-base: 1.125rem;
+    --font-size-sub-1: calc(var(--font-size-base) / var(--type-scale));
+    --font-size-mod-1: calc(var(--font-size-base) * var(--type-scale));
+    --font-size-mod-2: calc(var(--font-size-mod-1) * var(--type-scale));
+    --font-size-mod-3: calc(var(--font-size-mod-2) * var(--type-scale));
+    --font-size-mod-4: calc(var(--font-size-mod-3) * var(--type-scale));
+
+    --line-height-base: calc(var(--type-scale) * var(--type-scale));
+    --line-height-heading: var(--type-scale);
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 500;
+    line-height: var(--line-height-heading);
+}
+
+h1 {
+    font-size: var(--font-size-mod-4);
+}
+
+h2 {
+    font-size: var(--font-size-mod-3);
+}
+
+h3 {
+    font-size: var(--font-size-mod-2);
+}
+
+h4 {
+    font-size: var(--font-size-mod-1);
+}
+
+h5, h6 {
+    font-size: var(--font-size-base);
+}

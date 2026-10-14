@@ -1,4 +1,0 @@
-{{- /* Plain markup for MicroLighter; Hugo's Chroma highlighting is bypassed.
-       Map fence names MicroLighter doesn't alias itself to its grammar names. */ -}}
-{{- $lang := index (dict "diff" "git-diff" "patch" "git-diff" "golang" "go" "console" "bash") .Type | default .Type -}}
-<pre><code{{ with $lang }} class="language-{{ . }}"{{ end }}>{{ .Inner | htmlEscape | safeHTML }}</code></pre>

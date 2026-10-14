@@ -1,0 +1,47 @@
+:root {
+  color-scheme: light dark;
+
+  /* named colors */
+  --palette-paper:       #f5f2e9;
+  --palette-linen:       #ece7da;
+  --palette-parchment:   #d8d2c2;
+  --palette-ink:         #1f2a22;
+  --palette-stone:       #5c6b5f;
+  --palette-moss:        #3f6b3a;
+  --palette-bark:        #8a5a3b;
+  --palette-fern-light:  #7c9a6a;
+  --palette-spruce:      #2f5d62;
+  --palette-heather:     #6b4f7a;
+  --palette-rowan:       #a23b2a;
+
+  --palette-forest-floor: #141b16;
+  --palette-understory:   #1b241e;
+  --palette-peat:         #2c3a30;
+  --palette-lichen:       #dde3d6;
+  --palette-mist:         #8f9c8f;
+  --palette-sage:         #9cc283;
+  --palette-amber:        #d39b6a;
+  --palette-fern-deep:    #5f7f5a;
+  --palette-tarn:         #8cc4bf;
+  --palette-thistle:      #b9a0c9;
+  --palette-rosehip:      #e08a76;
+
+  /* semantic colors */
+  --bg:       light-dark(var(--palette-paper), var(--palette-forest-floor));
+  --fg:       light-dark(var(--palette-ink), var(--palette-lichen));
+  --muted:    light-dark(var(--palette-stone), var(--palette-mist));
+  --accent:   light-dark(var(--palette-moss), var(--palette-sage));
+  --accent-2: light-dark(var(--palette-bark), var(--palette-amber));
+  --fern:     light-dark(var(--palette-fern-light), var(--palette-fern-deep));
+  --rule:     light-dark(var(--palette-parchment), var(--palette-peat));
+  --code-bg:  light-dark(var(--palette-linen), var(--palette-understory));
+
+  /* alert colors */
+  --info:      light-dark(var(--palette-spruce), var(--palette-tarn));
+  --important: light-dark(var(--palette-heather), var(--palette-thistle));
+  --danger:    light-dark(var(--palette-rowan), var(--palette-rosehip));
+
+  --sans: "Fira Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "Fira Code", ui-monospace, "SF Mono", Menlo, monospace;
+  --measure: 40rem;
+}

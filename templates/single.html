@@ -8,6 +8,8 @@
     </p>
     {{ else }}{{ with .Page.Description }}<p class="meta">{{ . }}</p>{{ end }}{{ end }}
   </header>
-  {{ .Page.Content }}
+  <div class="prose">
+    {{ .Page.Content }}
+  </div>
 </article>
 {{ end }}

@@ -52,6 +52,32 @@ func TestCodeBlocks(t *testing.T) {
 	}
 }
 
+func TestAlerts(t *testing.T) {
+	b := &builder{md: newMarkdown()}
+	tests := []struct{ name, src, want string }{
+		{"note", "> [!NOTE]\n> Worth knowing.",
+			"<div class=\"alert alert-note\">\n<p class=\"alert-title\">Note</p>\n<p>Worth knowing.</p>\n</div>\n"},
+		{"marker on its own paragraph", "> [!WARNING]\n>\n> Careful.\n>\n> Twice.",
+			"<div class=\"alert alert-warning\">\n<p class=\"alert-title\">Warning</p>\n<p>Careful.</p>\n<p>Twice.</p>\n</div>\n"},
+		{"keeps inline markup", "> [!TIP]\n> Use `go tool mage`, **really**.",
+			"<div class=\"alert alert-tip\">\n<p class=\"alert-title\">Tip</p>\n<p>Use <code>go tool mage</code>, <strong>really</strong>.</p>\n</div>\n"},
+		{"unknown type stays a quote", "> [!FOO]\n> Text.", "<blockquote>\n<p>[!FOO]\nText.</p>\n</blockquote>\n"},
+		{"marker not alone stays a quote", "> [!NOTE] inline\n> Text.", "<blockquote>\n<p>[!NOTE] inline\nText.</p>\n</blockquote>\n"},
+		{"plain quote", "> Just a quote.", "<blockquote>\n<p>Just a quote.</p>\n</blockquote>\n"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := b.renderMarkdown([]byte(tt.src))
+			if err != nil {
+				t.Fatal(err)
+			}
+			if got != tt.want {
+				t.Errorf("got  %q\nwant %q", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestSplitDatePrefix(t *testing.T) {
 	tests := []struct {
 		name, date, slug string

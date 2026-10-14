@@ -1,0 +1,17 @@
+.site-header {
+  display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0.5rem 1.5rem;
+  padding: 2rem 0 1rem;
+  --font-family: var(--mono);
+}
+.wordmark { font-weight: 600; font-size: var(--font-size-base); color: var(--fg); text-decoration: none; }
+.wordmark::before { content: "~/"; color: var(--fern); }
+.site-header nav { display: flex; gap: 1.25rem; font-size: var(--font-size-sub-1); }
+.site-header nav a { color: var(--muted); text-decoration: none; }
+.site-header nav a:hover, .site-header nav a[aria-current] { color: var(--accent); }
+
+.site-footer {
+  display: flex; gap: 1.25rem;
+  margin-top: 4rem; padding: 1.5rem 0 3rem;
+  border-top: 1px solid var(--rule);
+  --font-family: var(--mono); font-size: var(--font-size-sub-1); color: var(--muted);
+}

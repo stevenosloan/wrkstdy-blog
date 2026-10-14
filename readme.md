@@ -69,6 +69,7 @@ It won't overwrite an existing post, and the build fails if two posts end up wit
 | `data/projects.toml` | Project links listed on the homepage |
 | `templates/` | Page templates (Go `html/template`) |
 | `assets/` | CSS, JS, fonts, and icons, fingerprinted at build time. esbuild builds `css/` and `js/` (and the fonts the CSS uses); the rest is hashed as is |
+| `scripts/fonts.sh` | Rebuilds the variable fonts in `assets/fonts/` (needs `fonttools`); the output is committed |
 | `package.json` | Browser JS dependencies (mermaid, microlighter), pinned by `package-lock.json` |
 | `static/` | Copied as-is: `favicon.ico`, for clients that ask for it at the root |
 | `netlify.toml` | Netlify build settings (`npm ci`, then the build) and pinned Go version |
