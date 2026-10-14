@@ -1,0 +1,32 @@
+/* MicroLighter "forest" syntax theme */
+[data-syntax-theme=forest] {
+  --syntax-background: var(--code-bg);
+  --syntax-foreground: var(--fg);
+  --syntax-comment:  light-dark(#7d8a7f, #6f7e72);
+  --syntax-keyword:  light-dark(#3f6b3a, #9cc283);
+  --syntax-operator: light-dark(#5c6b5f, #a3aea3);
+  --syntax-string:   light-dark(#8a5a3b, #d39b6a);
+  --syntax-constant: light-dark(#a0522d, #e0b07d);
+  --syntax-function: light-dark(#2f5d62, #8cc4bf);
+  --syntax-type:     light-dark(#5a6e2a, #c2cf86);
+  --syntax-variable: light-dark(#1f2a22, #dde3d6);
+  --syntax-property: light-dark(#2f5d62, #8cc4bf);
+  --syntax-tag:      light-dark(#3f6b3a, #9cc283);
+  --syntax-selector: light-dark(#5a6e2a, #c2cf86);
+  --syntax-inserted: light-dark(#3f6b3a, #9cc283);
+  --syntax-deleted:  light-dark(#a23b2a, #e08a76);
+}
+[data-syntax-theme=forest] pre:has(code) { background-color: var(--syntax-background); color: var(--syntax-foreground); }
+::highlight(comment), ::highlight(quote) { color: var(--syntax-comment); font-style: italic; }
+::highlight(keyword), ::highlight(storage), ::highlight(at-rule), ::highlight(doctype), ::highlight(important), ::highlight(section) { color: var(--syntax-keyword); }
+::highlight(operator), ::highlight(punctuation) { color: var(--syntax-operator); }
+::highlight(string), ::highlight(regexp), ::highlight(attribute-value), ::highlight(link), ::highlight(raw) { color: var(--syntax-string); }
+::highlight(numeric), ::highlight(boolean), ::highlight(constant), ::highlight(symbol), ::highlight(character-entity), ::highlight(anchor), ::highlight(entity) { color: var(--syntax-constant); }
+::highlight(function), ::highlight(decorator), ::highlight(animation) { color: var(--syntax-function); }
+::highlight(type), ::highlight(support) { color: var(--syntax-type); }
+::highlight(variable), ::highlight(interpolation) { color: var(--syntax-variable); }
+::highlight(property), ::highlight(key), ::highlight(attribute-name) { color: var(--syntax-property); }
+::highlight(tag) { color: var(--syntax-tag); }
+::highlight(selector) { color: var(--syntax-selector); }
+::highlight(inserted) { color: var(--syntax-inserted); }
+::highlight(deleted) { color: var(--syntax-deleted); }

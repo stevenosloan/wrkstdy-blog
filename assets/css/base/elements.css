@@ -1,0 +1,56 @@
+*, *::before, *::after { box-sizing: border-box; }
+
+/* Every element takes its family from --font-family, which inherits, so
+   switching it on an element (e.g. code) switches everything inside it too. */
+:root { --font-family: var(--sans); }
+* { font-family: var(--font-family); }
+
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0 auto;
+  max-width: calc(var(--measure) + 2rem);
+  padding: 0 1rem;
+  background: var(--bg);
+  color: var(--fg);
+  font-weight: 300;
+  font-size: var(--font-size-base);
+  text-rendering: optimizeLegibility;
+}
+main { min-height: 60vh; }
+
+/* Sans only ships 300 and 500, so bold is 500 rather than the browser's relative "bolder". */
+strong, b { font-weight: 500; }
+
+a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 0.18em; }
+a:hover { color: var(--accent-2); }
+::selection { background: color-mix(in srgb, var(--fern) 40%, transparent); }
+
+p, ul, ol, blockquote, pre, table, figure { margin: 0 0 1.25rem; }
+img { max-width: 100%; height: auto; border-radius: 4px; }
+hr { border: 0; border-top: 1px solid var(--rule); margin: 2.5rem 0; }
+
+blockquote {
+  margin-left: 0; padding-left: 1rem;
+  border-left: 3px solid var(--fern);
+  color: var(--muted);
+}
+
+/* Fira Code runs larger than Fira Sans at the same size, so mono text sits a little
+   under whatever it's set in rather than on a step of the scale. */
+code, pre, kbd { --font-family: var(--mono); font-size: 0.875em; }
+pre code { font-size: 1em; } /* pre already took the 0.875em; don't shrink twice */
+:not(pre) > code { background: var(--code-bg); padding: 0.1em 0.35em; border-radius: 3px; }
+pre {
+  background: var(--code-bg);
+  padding: 1rem 1.1rem;
+  border-radius: 6px;
+  overflow-x: auto;
+  line-height: 1.55;
+  tab-size: 4;
+}
+
+table { border-collapse: collapse; width: 100%; }
+th, td { text-align: left; padding: 0.4rem 0.6rem; border-bottom: 1px solid var(--rule); }
+th { --font-family: var(--mono); font-size: 0.875em; font-weight: 600; }
+
+.muted { color: var(--muted); }

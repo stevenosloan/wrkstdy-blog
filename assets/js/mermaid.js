@@ -15,6 +15,9 @@ async function render() {
   mermaid.initialize({
     startOnLoad: false,
     theme: "base",
+    // Flat shapes with a plain border: no neo-look shadows, gradients or glow.
+    look: "classic",
+    themeCSS: "* { filter: none !important; }",
     darkMode: dark.matches,
     fontFamily: '"Fira Sans", system-ui, sans-serif',
     themeVariables: {
@@ -28,6 +31,8 @@ async function render() {
       textColor: c.fg,
       noteBkgColor: c.note,
       noteTextColor: c.fg,
+      useGradient: false,
+      dropShadow: "none",
     },
   });
   blocks.forEach((el, i) => {

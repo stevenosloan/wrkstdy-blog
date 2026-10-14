@@ -1,0 +1,5 @@
+.swatches { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr)); gap: 0.75rem; }
+.swatches li { display: flex; align-items: center; gap: 0.5rem; font-size: var(--font-size-sub-1); }
+.swatch { flex: none; width: 2rem; height: 2rem; border-radius: 4px; border: 1px solid var(--rule); }
+.specimen-family { margin-bottom: 1.5rem; }
+.specimen-family p { margin: 0 0 0.35rem; }

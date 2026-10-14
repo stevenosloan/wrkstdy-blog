@@ -1,0 +1,13 @@
+.intro { font-size: var(--font-size-mod-1); margin-top: 2rem; }
+
+.link-list, .post-list { list-style: none; padding: 0; }
+.link-list li { margin-bottom: 0.6rem; }
+.link-list a { --font-family: var(--mono); }
+.link-list .muted { display: block; }
+
+.post-list li { display: flex; gap: 1rem; margin-bottom: 0.45rem; }
+.post-list time { flex: none; --font-family: var(--mono); font-size: var(--font-size-sub-1); color: var(--muted); padding-top: 0.1em; }
+
+@media (max-width: 480px) {
+  .post-list li { flex-direction: column; gap: 0; margin-bottom: 0.9rem; }
+}
