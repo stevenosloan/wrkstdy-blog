@@ -1,0 +1,9 @@
+{
+  "name": "wrkstdy-blog",
+  "private": true,
+  "description": "Third-party browser JS that esbuild bundles into assets. The site itself is Go.",
+  "dependencies": {
+    "mermaid": "12.2.0",
+    "microlighter": "2.2.0"
+  }
+}

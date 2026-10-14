@@ -74,17 +74,36 @@ func TestSplitDatePrefix(t *testing.T) {
 	}
 }
 
-func TestFingerprintDirRewritesCSSURLs(t *testing.T) {
+func TestFingerprintDirSkipsWhatEsbuildBuilds(t *testing.T) {
 	src, out := t.TempDir(), t.TempDir()
-	write := func(rel, data string) {
-		if err := writeFile(filepath.Join(src, rel), []byte(data)); err != nil {
+	for _, rel := range []string{"css/main.css", "js/main.js", "fonts/a.woff2", "icons/a.svg"} {
+		if err := writeFile(filepath.Join(src, rel), []byte("x")); err != nil {
 			t.Fatal(err)
 		}
 	}
-	write("fonts/a.woff2", "font")
-	write("css/main.css", `@font-face { src: url("/assets/fonts/a.woff2"); }`)
 
 	assets, err := fingerprintDir(src, out, "assets")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(assets) != 1 || assets["icons/a.svg"].URL == "" {
+		t.Errorf("assets = %v, want only icons/a.svg", assets)
+	}
+}
+
+func TestBundleAssetsCSS(t *testing.T) {
+	root, out := t.TempDir(), t.TempDir()
+	files := map[string]string{
+		"assets/fonts/a.woff2": "font",
+		"assets/css/main.css":  "/* comment */\n@font-face {\n  src: url(\"../fonts/a.woff2\");\n}\nbody {\n  color: red;\n}\n",
+	}
+	for name, body := range files {
+		if err := writeFile(filepath.Join(root, filepath.FromSlash(name)), []byte(body)); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	assets, err := bundleAssets(root, out)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -92,44 +111,72 @@ func TestFingerprintDirRewritesCSSURLs(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if want := assets["fonts/a.woff2"].URL; !strings.Contains(string(css), want) {
-		t.Errorf("css = %q, want it to contain %q", css, want)
+	font := assets["fonts/a.woff2"]
+	if font.URL == "" {
+		t.Fatalf("assets = %v, want one for fonts/a.woff2", assets)
+	}
+	if !strings.Contains(string(css), font.URL) || strings.Contains(string(css), "comment") {
+		t.Errorf("css = %q, want it minified and pointing at %q", css, font.URL)
+	}
+	if _, err := os.Stat(filepath.Join(out, filepath.FromSlash(font.URL))); err != nil {
+		t.Error(err)
+	}
+	sum := sha256.Sum256(css)
+	if integrity := "sha256-" + base64.StdEncoding.EncodeToString(sum[:]); assets["css/main.css"].Integrity != integrity {
+		t.Errorf("integrity = %q, want the hash of the minified file, %q", assets["css/main.css"].Integrity, integrity)
 	}
 
-	write("css/main.css", `@font-face { src: url("/assets/fonts/missing.woff2"); }`)
-	if _, err := fingerprintDir(src, t.TempDir(), "assets"); err == nil {
-		t.Error("want an error for a url() to a missing asset")
+	if err := writeFile(filepath.Join(root, "assets/css/main.css"), []byte(`@font-face { src: url("../fonts/missing.woff2"); }`)); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := bundleAssets(root, t.TempDir()); err == nil {
+		t.Error("want an error for a url() to a missing font")
 	}
 }
 
-func TestFingerprintDirMinifies(t *testing.T) {
-	src, out := t.TempDir(), t.TempDir()
-	if err := writeFile(filepath.Join(src, "css/main.css"), []byte("/* comment */\nbody {\n  color: red;\n}\n")); err != nil {
-		t.Fatal(err)
+func TestBundleAssetsJS(t *testing.T) {
+	root, out := t.TempDir(), t.TempDir()
+	files := map[string]string{
+		"assets/js/main.js":             "import { greet } from 'pkg';\ngreet('hi');\nimport('./lazy.js').then((m) => m.default());\n",
+		"assets/js/lazy.js":             "export default () => console.log('lazy');\n",
+		"node_modules/pkg/package.json": `{"name": "pkg", "main": "index.js"}`,
+		"node_modules/pkg/index.js":     "export const greet = (message) => console.log(message);\n",
 	}
-	if err := writeFile(filepath.Join(src, "js/main.js"), []byte("// comment\nconst greeting = \"hi\";\nconsole.log(greeting);\n")); err != nil {
-		t.Fatal(err)
+	for name, body := range files {
+		if err := writeFile(filepath.Join(root, filepath.FromSlash(name)), []byte(body)); err != nil {
+			t.Fatal(err)
+		}
 	}
 
-	assets, err := fingerprintDir(src, out, "assets")
+	assets, err := bundleAssets(root, out)
 	if err != nil {
 		t.Fatal(err)
 	}
-	for rel, want := range map[string]string{
-		"css/main.css": "body{color:red}",
-		"js/main.js":   `const greeting="hi";console.log(greeting)`,
-	} {
-		got, err := os.ReadFile(filepath.Join(out, filepath.FromSlash(assets[rel].URL)))
-		if err != nil {
-			t.Fatal(err)
-		}
-		if string(got) != want {
-			t.Errorf("%s = %q, want %q", rel, got, want)
-		}
-		sum := sha256.Sum256(got)
-		if integrity := "sha256-" + base64.StdEncoding.EncodeToString(sum[:]); assets[rel].Integrity != integrity {
-			t.Errorf("%s integrity = %q, want the hash of the minified file, %q", rel, assets[rel].Integrity, integrity)
-		}
+	// lazy.js is also a file in assets/js, so it's an entry point of its own.
+	main, ok := assets["js/main.js"]
+	if !ok {
+		t.Fatalf("assets = %v, want one for js/main.js", assets)
+	}
+	got, err := os.ReadFile(filepath.Join(out, filepath.FromSlash(main.URL)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(got), "console.log(") || strings.Contains(string(got), "from\"pkg\"") {
+		t.Errorf("main.js = %q, want pkg bundled in", got)
+	}
+	sum := sha256.Sum256(got)
+	if integrity := "sha256-" + base64.StdEncoding.EncodeToString(sum[:]); main.Integrity != integrity {
+		t.Errorf("integrity = %q, want %q", main.Integrity, integrity)
+	}
+}
+
+func TestBundleAssetsJSNeedsNodeModules(t *testing.T) {
+	root := t.TempDir()
+	if err := writeFile(filepath.Join(root, "assets/js/main.js"), []byte("console.log(1)")); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := bundleAssets(root, t.TempDir()); err == nil || !strings.Contains(err.Error(), "npm") {
+		t.Errorf("err = %v, want one that says to run npm", err)
 	}
 }
 

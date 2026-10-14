@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"html/template"
+	"maps"
 	"os"
 	"path/filepath"
 	"strings"
@@ -101,6 +102,11 @@ func Build(opts Options) (int, error) {
 	if err != nil {
 		return 0, fmt.Errorf("fingerprinting assets: %w", err)
 	}
+	built, err := bundleAssets(root, opts.Out)
+	if err != nil {
+		return 0, fmt.Errorf("bundling assets: %w", err)
+	}
+	maps.Copy(assets, built)
 
 	site := &Site{
 		Config:   cfg,

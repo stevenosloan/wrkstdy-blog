@@ -1,5 +1,5 @@
 // Renders ```mermaid code blocks. Only included on pages that have one.
-import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@12.0.0/dist/mermaid.esm.min.mjs";
+import mermaid from "mermaid";
 
 const dark = window.matchMedia("(prefers-color-scheme: dark)");
 
