@@ -3,6 +3,7 @@
 @import "./base/type.css";
 @import "./base/prose.css";
 @import "./base/elements.css";
+@import "./base/alerts.css";
 
 @import "./layout/site.css";
 

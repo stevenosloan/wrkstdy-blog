@@ -1,0 +1,25 @@
+/* GitHub-style alerts: > [!NOTE] and friends, rendered by internal/site/alerts.go */
+.alert {
+  --alert-color: var(--info);
+  margin: 0 0 1.25rem;
+  padding: 0.75rem 1rem;
+  font-size: var(--font-size-sub-1);
+  border-left: 3px solid var(--alert-color);
+  border-radius: 0 4px 4px 0;
+  background: color-mix(in srgb, var(--alert-color) 8%, transparent);
+}
+.alert > :last-child { margin-bottom: 0; }
+
+.alert-title {
+  --font-family: var(--mono);
+  margin: 0 0 0.35rem;
+  font-size: var(--font-size-sub-1);
+  font-weight: 600;
+  color: var(--alert-color);
+}
+
+.alert-note      { --alert-color: var(--info); }
+.alert-tip       { --alert-color: var(--accent); }
+.alert-important { --alert-color: var(--important); }
+.alert-warning   { --alert-color: var(--accent-2); }
+.alert-caution   { --alert-color: var(--danger); }

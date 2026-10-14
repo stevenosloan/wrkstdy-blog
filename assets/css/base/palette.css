@@ -10,6 +10,9 @@
   --palette-moss:        #3f6b3a;
   --palette-bark:        #8a5a3b;
   --palette-fern-light:  #7c9a6a;
+  --palette-spruce:      #2f5d62;
+  --palette-heather:     #6b4f7a;
+  --palette-rowan:       #a23b2a;
 
   --palette-forest-floor: #141b16;
   --palette-understory:   #1b241e;
@@ -19,6 +22,9 @@
   --palette-sage:         #9cc283;
   --palette-amber:        #d39b6a;
   --palette-fern-deep:    #5f7f5a;
+  --palette-tarn:         #8cc4bf;
+  --palette-thistle:      #b9a0c9;
+  --palette-rosehip:      #e08a76;
 
   /* semantic colors */
   --bg:       light-dark(var(--palette-paper), var(--palette-forest-floor));
@@ -29,6 +35,11 @@
   --fern:     light-dark(var(--palette-fern-light), var(--palette-fern-deep));
   --rule:     light-dark(var(--palette-parchment), var(--palette-peat));
   --code-bg:  light-dark(var(--palette-linen), var(--palette-understory));
+
+  /* alert colors */
+  --info:      light-dark(var(--palette-spruce), var(--palette-tarn));
+  --important: light-dark(var(--palette-heather), var(--palette-thistle));
+  --danger:    light-dark(var(--palette-rowan), var(--palette-rosehip));
 
   --sans: "Fira Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: "Fira Code", ui-monospace, "SF Mono", Menlo, monospace;
