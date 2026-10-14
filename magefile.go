@@ -31,7 +31,10 @@ var watched = []string{"content", "templates", "static", "assets", "data"}
 func Serve(
 	drafts *bool, // include posts with draft: true
 ) error {
-	opts := site.Options{Root: ".", Out: "public", Drafts: drafts != nil && *drafts, BaseURL: "http://" + serveAddr + "/"}
+	// Dev mode: unminified JS and CSS with source maps and stable names, rebuilt incrementally.
+	bundler := site.NewBundler(".", "public", true)
+	defer bundler.Close()
+	opts := site.Options{Root: ".", Out: "public", Drafts: drafts != nil && *drafts, BaseURL: "http://" + serveAddr + "/", Bundler: bundler}
 	if err := build(opts); err != nil {
 		return err
 	}
@@ -52,7 +55,12 @@ func Serve(
 	go rebuildOnChange(w, opts)
 
 	fmt.Printf("serving on http://%s/ (ctrl-c to stop)\n", serveAddr)
-	return http.ListenAndServe(serveAddr, http.FileServer(http.Dir(opts.Out)))
+	files := http.FileServer(http.Dir(opts.Out))
+	return http.ListenAndServe(serveAddr, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Dev files keep their names between rebuilds, so don't let the browser reuse them.
+		w.Header().Set("Cache-Control", "no-store")
+		files.ServeHTTP(w, r)
+	}))
 }
 
 // Build writes the site to public/. Netlify runs it with -production on every deploy.

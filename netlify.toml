@@ -1,5 +1,5 @@
 [build]
-  command = "go tool mage build -production"
+  command = "npm ci && go tool mage build -production"
   publish = "public"
 
 [build.environment]
@@ -7,10 +7,10 @@
 
 # Pull request previews include drafts, so posts can be reviewed before they're published.
 [context.deploy-preview]
-  command = "go tool mage build -production -baseurl=$DEPLOY_PRIME_URL -drafts"
+  command = "npm ci && go tool mage build -production -baseurl=$DEPLOY_PRIME_URL -drafts"
 
 [context.branch-deploy]
-  command = "go tool mage build -production -baseurl=$DEPLOY_PRIME_URL"
+  command = "npm ci && go tool mage build -production -baseurl=$DEPLOY_PRIME_URL"
 
 # Purges Cloudflare's whole cache after each production deploy, so new pages don't wait out the edge TTL.
 # Needs CLOUDFLARE_ZONE_ID and CLOUDFLARE_API_TOKEN set in Netlify. Production only: previews and branch
