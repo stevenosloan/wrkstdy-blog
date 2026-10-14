@@ -25,6 +25,23 @@ Body text is set in Fira Sans. It carries **bold**, *italic*, ~~strikethrough~~,
 > A blockquote. Good for pulling out a line from somewhere else, or an aside
 > that deserves a little room.
 
+## Alerts
+
+> [!NOTE]
+> Useful information that's worth knowing, even when skimming.
+
+> [!TIP]
+> A helpful suggestion for doing things better or more easily.
+
+> [!IMPORTANT]
+> Key information needed to get something right.
+
+> [!WARNING]
+> Something that needs attention right away to avoid problems.
+
+> [!CAUTION]
+> The risks or downsides of an action.
+
 ---
 
 ## Lists
@@ -46,7 +63,7 @@ Body text is set in Fira Sans. It carries **bold**, *italic*, ~~strikethrough~~,
 
 | Element | Font | Notes |
 | --- | --- | --- |
-| Body | Fira Sans | weight 300, 18px, 1.65 line height |
+| Body | Fira Sans | weight 300, 18px, 1.5625 line height |
 | Headings | Fira Sans | weight 500 |
 | Bold | Fira Sans | weight 500 |
 | Code | Fira Code | weight 400, ligatures on |
