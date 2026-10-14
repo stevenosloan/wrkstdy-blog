@@ -7,11 +7,14 @@
     --font-size-mod-2: calc(var(--font-size-mod-1) * var(--type-scale));
     --font-size-mod-3: calc(var(--font-size-mod-2) * var(--type-scale));
     --font-size-mod-4: calc(var(--font-size-mod-3) * var(--type-scale));
+
+    --line-height-base: calc(var(--type-scale) * var(--type-scale));
+    --line-height-heading: var(--type-scale);
 }
 
 h1, h2, h3, h4, h5, h6 {
     font-weight: 500;
-    line-height: 1.25;
+    line-height: var(--line-height-heading);
 }
 
 h1 {
