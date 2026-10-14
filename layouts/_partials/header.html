@@ -1,9 +1,0 @@
-<header class="site-header">
-  <a class="wordmark" href="/">{{ site.Title }}</a>
-  <nav aria-label="Main">
-    {{ $current := . }}
-    {{ range site.Menus.main }}
-      <a href="{{ .URL }}"{{ if or ($current.IsMenuCurrent "main" .) ($current.HasMenuCurrent "main" .) }} aria-current="page"{{ end }}>{{ .Name }}</a>
-    {{ end }}
-  </nav>
-</header>
