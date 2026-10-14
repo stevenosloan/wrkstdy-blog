@@ -17,7 +17,10 @@ body {
   line-height: var(--line-height-base);
   text-rendering: optimizeLegibility;
 }
-main { min-height: 60vh; }
+/* Sticky footer: body fills the viewport and main takes the leftover space, so a
+   short page still puts the footer at the bottom of the window. */
+body { display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh; }
+main { flex: 1; }
 
 /* Sans only ships 300 and 500, so bold is 500 rather than the browser's relative "bolder". */
 strong, b { font-weight: 500; }
