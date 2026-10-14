@@ -10,6 +10,8 @@ draft: true
 
 ## Type
 
+Both families are variable fonts: one file per style covers every weight in its range.
+
 {{< specimen >}}
 
 # Heading one
@@ -44,9 +46,10 @@ Body text is set in Fira Sans. It carries **bold**, *italic*, ~~strikethrough~~,
 
 | Element | Font | Notes |
 | --- | --- | --- |
-| Body | Fira Sans | 17px, 1.65 line height |
-| Headings | Fira Code | weight 500 |
-| Code | Fira Code | ligatures on |
+| Body | Fira Sans | weight 300, 18px, 1.65 line height |
+| Headings | Fira Sans | weight 500 |
+| Bold | Fira Sans | weight 500 |
+| Code | Fira Code | weight 400, ligatures on |
 
 ## Code
 
@@ -68,8 +71,8 @@ export const isDraft = (post) => post?.draft === true && !post.published;
 
 ```bash
 # Shell
-hugo new content blog/my-post.md
-hugo server --buildDrafts
+go tool mage new
+go tool mage serve -drafts
 ```
 
 ```css
@@ -95,7 +98,7 @@ A code block with no language stays plain.
 
 ```mermaid
 flowchart LR
-  write[Write markdown] --> build[hugo build]
+  write[Write markdown] --> build[mage build]
   build --> preview{Looks right?}
   preview -- yes --> ship[Push to Netlify]
   preview -- no --> write
