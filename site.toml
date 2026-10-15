@@ -3,3 +3,7 @@ title = "wrkstdy"
 description = "Writing and a dev log from wrkstdy."
 author = "Steven"
 language = "en-US"
+
+[[menu]]
+name = "blog"
+url = "/blog/"

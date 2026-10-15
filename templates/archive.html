@@ -1,0 +1,16 @@
+{{ define "main" }}
+<article class="archive">
+  <header>
+    <h1>{{ .Page.Title }}</h1>
+    {{ with .Page.Description }}<p class="meta">{{ . }}</p>{{ end }}
+  </header>
+  {{ .Page.Content }}
+  {{ range .Section.Years }}
+  <section>
+    <h2>{{ .Year }}</h2>
+    {{ template "post-list.html" .Pages }}
+  </section>
+  {{ end }}
+  <p><a href="{{ .Section.FeedURL }}">subscribe via RSS</a></p>
+</article>
+{{ end }}

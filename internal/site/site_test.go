@@ -3,6 +3,7 @@ package site
 import (
 	"crypto/sha256"
 	"encoding/base64"
+	"encoding/xml"
 	"os"
 	"path/filepath"
 	"strings"
@@ -271,5 +272,40 @@ func TestBuildWritesNotFoundPage(t *testing.T) {
 	}
 	if _, err := os.Stat(filepath.Join(out, "404", "index.html")); err == nil {
 		t.Error("404.md should only be written to /404.html, not /404/")
+	}
+}
+
+func TestBuildWritesArchiveAndFeed(t *testing.T) {
+	out := t.TempDir()
+	if _, err := Build(Options{Root: "../..", Out: out}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(filepath.Join(out, "blog", "index.html")); err != nil {
+		t.Errorf("want an archive page at /blog/: %v", err)
+	}
+
+	data, err := os.ReadFile(filepath.Join(out, "blog", "feed.xml"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var feed rss
+	if err := xml.Unmarshal(data, &feed); err != nil {
+		t.Fatalf("feed.xml doesn't parse: %v", err)
+	}
+	if len(feed.Channel.Items) == 0 {
+		t.Fatal("feed has no items")
+	}
+	for _, item := range feed.Channel.Items {
+		if !strings.HasPrefix(item.Link, "https://") {
+			t.Errorf("item link %q should be absolute", item.Link)
+		}
+	}
+	// Checked on the raw XML: Unmarshal can't fill content:encoded, since it
+	// matches the tag against the namespace URL rather than the prefix.
+	if !strings.Contains(string(data), "<content:encoded>") {
+		t.Error("feed items should carry their full content")
+	}
+	if strings.Contains(string(data), `href=&#34;/`) {
+		t.Error("feed content has a site-relative link")
 	}
 }

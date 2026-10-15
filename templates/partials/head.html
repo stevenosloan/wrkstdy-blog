@@ -8,6 +8,9 @@
 {{ else -}}
 <link rel="canonical" href="{{ .Site.AbsURL .Page.URL }}">
 {{ end -}}
+{{ with .Site.Section "blog" -}}
+<link rel="alternate" type="application/rss+xml" title="{{ $.Site.Title }}" href="{{ $.Site.AbsURL .FeedURL }}">
+{{ end -}}
 <link rel="icon" href="/favicon.ico" sizes="32x32">
 <link rel="icon" href="{{ (.Site.Asset "icons/favicon.svg").URL }}" type="image/svg+xml">
 <link rel="apple-touch-icon" href="{{ (.Site.Asset "icons/apple-touch-icon.png").URL }}">

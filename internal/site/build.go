@@ -56,15 +56,16 @@ func (s *Site) AbsURL(path string) string {
 
 // view is the data passed to every page template.
 type view struct {
-	Site *Site
-	Page *Page
+	Site    *Site
+	Page    *Page
+	Section *Section // set on a section's index page
 }
 
 type builder struct {
 	opts       Options
 	md         goldmark.Markdown
 	shortcodes *template.Template
-	pages      map[string]*template.Template // by kind: home, single
+	pages      map[string]*template.Template // by kind: home, archive, single
 }
 
 // Build renders the whole site into opts.Out and returns how many pages it wrote.
@@ -146,6 +147,12 @@ func Build(opts Options) (int, error) {
 		}
 	}
 	for _, s := range c.sections {
+		if err := render("archive", view{Page: s.Index, Section: s}); err != nil {
+			return 0, err
+		}
+		if err := writeFeed(opts.Out, site, s); err != nil {
+			return 0, fmt.Errorf("writing %s: %w", s.FeedURL(), err)
+		}
 		for _, p := range s.Pages {
 			if err := render("single", view{Page: p}); err != nil {
 				return 0, err
