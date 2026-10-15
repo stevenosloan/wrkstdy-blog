@@ -79,42 +79,53 @@ func (b *builder) loadContent(dir string) (*content, error) {
 			return err
 		}
 		rel, _ := filepath.Rel(dir, path)
-		page, slug, err := b.loadPage(path)
-		if err != nil {
-			return fmt.Errorf("%s: %w", rel, err)
-		}
-		if page.Draft && !b.opts.Drafts {
-			return nil
+		name, folder := filepath.Base(rel), filepath.Dir(rel)
+
+		// A page bundle: content/journal/2026-10-15-lake-day/index.md is a page
+		// with its photos beside it. The folder's name stands in for the filename.
+		bundle := ""
+		if name == "index.md" && folder != "." {
+			bundle = filepath.Dir(path)
+			name = filepath.Base(folder) + ".md"
+			folder = filepath.Dir(folder)
 		}
 
-		section := filepath.ToSlash(filepath.Dir(rel))
+		section := filepath.ToSlash(folder)
 		if section == "." {
 			section = ""
 		}
-		if filepath.Base(rel) == "_index.md" {
-			if section == "" {
-				page.URL = "/"
-				c.home = page
-				return nil
+		urlFor := func(slug string) string {
+			switch {
+			case name == "_index.md" && section == "":
+				return "/"
+			case name == "_index.md":
+				return "/" + section + "/"
+			case rel == "404.md":
+				return notFoundURL
+			case section == "":
+				return "/" + slug + "/"
 			}
-			page.URL = "/" + section + "/"
-			c.section(section).Index = page
-			return nil
+			return "/" + section + "/" + slug + "/"
 		}
 
-		if rel == "404.md" {
-			page.URL = notFoundURL
+		page, err := b.loadPage(path, name, bundle, urlFor)
+		if err != nil {
+			return fmt.Errorf("%s: %w", rel, err)
+		}
+		switch {
+		case page == nil: // a draft, left out
+		case name == "_index.md" && section == "":
+			c.home = page
+		case name == "_index.md":
+			c.section(section).Index = page
+		case rel == "404.md":
 			c.notFound = page
-			return nil
-		}
-		if section == "" {
-			page.URL = "/" + slug + "/"
+		case section == "":
 			c.pages = append(c.pages, page)
-			return nil
+		default:
+			s := c.section(section)
+			s.Pages = append(s.Pages, page)
 		}
-		page.URL = "/" + section + "/" + slug + "/"
-		s := c.section(section)
-		s.Pages = append(s.Pages, page)
 		return nil
 	})
 	if err != nil {
@@ -178,41 +189,49 @@ func (c *content) section(name string) *Section {
 	return s
 }
 
-func (b *builder) loadPage(path string) (page *Page, slug string, err error) {
+// loadPage reads and renders the markdown file at path, or returns nil for a
+// draft when drafts are left out. name is the file's name, or for a bundle, its
+// folder's name plus ".md"; bundle is that folder. urlFor maps the page's slug
+// to its URL.
+func (b *builder) loadPage(path, name, bundle string, urlFor func(slug string) string) (*Page, error) {
 	src, err := os.ReadFile(path)
 	if err != nil {
-		return nil, "", err
+		return nil, err
 	}
 	meta, body, err := splitFrontMatter(src)
 	if err != nil {
-		return nil, "", err
+		return nil, err
 	}
 	var fm frontMatter
 	if err := yaml.Unmarshal(meta, &fm); err != nil {
-		return nil, "", fmt.Errorf("front matter: %w", err)
+		return nil, fmt.Errorf("front matter: %w", err)
+	}
+	if fm.Draft && !b.opts.Drafts {
+		return nil, nil
 	}
 
-	html, err := b.renderMarkdown(body)
-	if err != nil {
-		return nil, "", err
-	}
-
-	fileDate, fileSlug := splitDatePrefix(strings.TrimSuffix(filepath.Base(path), ".md"))
-	slug = fm.Slug
-	if slug == "" {
-		slug = fileSlug
+	fileDate, slug := splitDatePrefix(strings.TrimSuffix(name, ".md"))
+	if fm.Slug != "" {
+		slug = fm.Slug
 	}
 	date := fm.Date
 	if date.IsZero() {
 		date = fileDate
+	}
+	url := urlFor(slug)
+
+	html, err := b.renderMarkdown(body, &pageInfo{URL: url, Bundle: bundle, photos: b.photos})
+	if err != nil {
+		return nil, err
 	}
 	return &Page{
 		Title:       fm.Title,
 		Description: fm.Description,
 		Date:        date,
 		Draft:       fm.Draft,
+		URL:         url,
 		Content:     template.HTML(html),
 		HasCode:     strings.Contains(html, `<pre><code class="language-`),
 		HasMermaid:  strings.Contains(html, `<pre class="mermaid">`),
-	}, slug, nil
+	}, nil
 }

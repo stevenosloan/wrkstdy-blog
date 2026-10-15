@@ -68,6 +68,21 @@ Body text is set in Fira Sans. It carries **bold**, *italic*, ~~strikethrough~~,
 | Bold | Fira Sans | weight 500 |
 | Code | Fira Code | weight 400, ligatures on |
 
+## Recipe table
+
+```recipe
+serve with rice
+  stir together, simmer 5 min
+    simmer until soft, 20 min
+      1 cup red lentils, rinsed
+      3 cups water
+      1 tsp turmeric
+    fry until the seeds pop
+      2 tbsp ghee
+      1 tsp cumin seeds
+  salt to taste
+```
+
 ## Code
 
 ```go

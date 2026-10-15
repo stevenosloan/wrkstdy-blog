@@ -1,0 +1,8 @@
+/* ```recipe tables: ingredients on the left, each step to the right of what goes
+   into it, spanning their rows, down to the finished dish on the far right. */
+.recipe-table { overflow-x: auto; margin: 0 0 1.25rem; }
+.recipe-table table { margin: 0; font-size: var(--font-size-sub-1); }
+.recipe-table td { border: 1px solid var(--rule); vertical-align: middle; }
+.recipe-table .ingredient { white-space: nowrap; }
+.recipe-table .step { background: var(--code-bg); min-width: 8rem; }
+.recipe-table .dish { color: var(--accent); font-weight: 500; }
