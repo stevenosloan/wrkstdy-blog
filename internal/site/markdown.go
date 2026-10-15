@@ -18,7 +18,7 @@ import (
 
 func newMarkdown() goldmark.Markdown {
 	return goldmark.New(
-		goldmark.WithExtensions(extension.GFM, extension.Footnote, extension.Typographer, alertExtension{}),
+		goldmark.WithExtensions(extension.GFM, extension.Footnote, extension.Typographer, alertExtension{}, figureExtension{}),
 		goldmark.WithParserOptions(parser.WithAutoHeadingID()),
 		goldmark.WithRendererOptions(
 			// Lower numbers run first, so this replaces goldmark's own code block renderer (1000).
@@ -36,7 +36,8 @@ var langAliases = map[string]string{
 }
 
 // codeBlockRenderer writes fenced code as plain <pre><code class="language-x"> for
-// MicroLighter to color in the browser, and ```mermaid blocks as <pre class="mermaid">.
+// MicroLighter to color in the browser, ```mermaid blocks as <pre class="mermaid">,
+// and ```recipe blocks as recipe tables (see recipe.go).
 type codeBlockRenderer struct{}
 
 func (r codeBlockRenderer) RegisterFuncs(reg renderer.NodeRendererFuncRegisterer) {
@@ -58,6 +59,14 @@ func (codeBlockRenderer) render(w util.BufWriter, src []byte, n ast.Node, enteri
 	body := html.EscapeString(code.String())
 
 	lang := string(block.Language(src))
+	if lang == "recipe" {
+		table, err := renderRecipe(code.String())
+		if err != nil {
+			return ast.WalkStop, err
+		}
+		w.WriteString(table)
+		return ast.WalkSkipChildren, nil
+	}
 	if lang == "mermaid" {
 		fmt.Fprintf(w, "<pre class=\"mermaid\">%s</pre>\n", body)
 		return ast.WalkSkipChildren, nil
@@ -78,8 +87,9 @@ var shortcodeRE = regexp.MustCompile(`\{\{<\s*([\w-]+)\s*>\}\}`)
 
 // renderMarkdown turns a page body into HTML. Shortcodes are swapped for
 // placeholder words before goldmark runs (it would escape their HTML), and the
-// rendered templates/shortcodes/<name>.html goes back in afterwards.
-func (b *builder) renderMarkdown(body []byte) (string, error) {
+// rendered templates/shortcodes/<name>.html goes back in afterwards. page may be
+// nil, for markdown that isn't a page of its own.
+func (b *builder) renderMarkdown(body []byte, page *pageInfo) (string, error) {
 	var snippets []string
 	var scErr error
 	body = shortcodeRE.ReplaceAllFunc(body, func(m []byte) []byte {
@@ -95,8 +105,13 @@ func (b *builder) renderMarkdown(body []byte) (string, error) {
 		return "", scErr
 	}
 
+	pc := parser.NewContext()
+	pc.Set(pageInfoKey, page)
 	var buf bytes.Buffer
-	if err := b.md.Convert(body, &buf); err != nil {
+	if err := b.md.Convert(body, &buf, parser.WithContext(pc)); err != nil {
+		return "", err
+	}
+	if err, _ := pc.Get(figureErrKey).(error); err != nil {
 		return "", err
 	}
 	out := buf.String()

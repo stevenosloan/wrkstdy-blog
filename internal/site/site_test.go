@@ -43,7 +43,7 @@ func TestCodeBlocks(t *testing.T) {
 		{"```mermaid\na --> b\n```", `<pre class="mermaid">a --&gt; b`},
 	}
 	for _, tt := range tests {
-		got, err := b.renderMarkdown([]byte(tt.src))
+		got, err := b.renderMarkdown([]byte(tt.src), nil)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -68,7 +68,7 @@ func TestAlerts(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := b.renderMarkdown([]byte(tt.src))
+			got, err := b.renderMarkdown([]byte(tt.src), nil)
 			if err != nil {
 				t.Fatal(err)
 			}

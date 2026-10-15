@@ -8,3 +8,7 @@ pre.mermaid:not([data-processed]) { visibility: hidden; }
 .footnotes { font-size: var(--font-size-sub-1); color: var(--muted); }
 
 .archive > header h1 { margin-bottom: 0.4rem; }
+
+/* photos: a paragraph that starts with an image, captioned by the lines under it */
+figure picture, figure img { display: block; }
+figcaption { margin-top: 0.5rem; font-size: var(--font-size-sub-1); color: var(--muted); }

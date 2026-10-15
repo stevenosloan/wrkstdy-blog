@@ -19,15 +19,25 @@ draft: true
 
 // NewPost creates <root>/content/<section>/<date>-<slug>.md as a draft with
 // starter front matter, deriving the slug from the title. The date in the
-// filename is the post's date. It returns the new file's path and never
-// overwrites an existing post.
-func NewPost(root, section, title string, date time.Time) (string, error) {
+// filename is the post's date. With bundle, it makes <date>-<slug>/index.md
+// instead, a folder to put the post's photos in. It returns the new file's path
+// and never overwrites an existing post.
+func NewPost(root, section, title string, date time.Time, bundle bool) (string, error) {
 	title = strings.TrimSpace(title)
 	slug := Slugify(title)
 	if slug == "" {
 		return "", fmt.Errorf("can't make a slug from title %q", title)
 	}
-	path := filepath.Join(root, "content", filepath.FromSlash(section), date.Format(time.DateOnly)+"-"+slug+".md")
+	dir := filepath.Join(root, "content", filepath.FromSlash(section))
+	name := date.Format(time.DateOnly) + "-" + slug
+	path, other := filepath.Join(dir, name+".md"), filepath.Join(dir, name, "index.md")
+	if bundle {
+		path, other = other, path
+	}
+	// A bundle and a plain file with the same name would publish to the same URL.
+	if _, err := os.Stat(other); err == nil {
+		return "", fmt.Errorf("%s already exists", other)
+	}
 
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return "", err
