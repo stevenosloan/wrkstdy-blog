@@ -51,10 +51,10 @@ It won't overwrite an existing post, and the build fails if two posts end up wit
 `site.Build` in `internal/site/build.go` runs these steps in order:
 
 1. Read `site.toml` and `data/projects.toml`.
-2. Parse `templates/`: `base.html` and `partials/` once, then one copy per page kind (`home`, `single`), each defining its own `main` block.
+2. Parse `templates/`: `base.html` and `partials/` once, then one copy per page kind (`home`, `archive`, `single`), each defining its own `main` block.
 3. Walk `content/`. Each `.md` file has YAML front matter split off and its body rendered by [goldmark](https://github.com/yuin/goldmark). `_index.md` makes a folder a section (posts in `content/blog/` are served under `/blog/`). A leading `YYYY-MM-DD-` in a filename becomes the page's date and is dropped from its URL.
 4. Wipe `public/`, copy `static/` into it, and write each file in `assets/` under a content-hashed name in `public/assets/`. [esbuild](https://esbuild.github.io/) (`internal/site/bundle.go`) builds the CSS and JS: each file in `assets/css/` and `assets/js/` is an entry point, minified, with JS bundled with what it imports from `node_modules/` and code-split. `serve` keeps one esbuild context between rebuilds and writes unminified files with source maps and unhashed names, so devtools breakpoints survive a rebuild. Fonts referenced by `url()` in the CSS are hashed by esbuild and the `url()` rewritten. Icons and anything else are hashed as they are.
-5. Render every page.
+5. Render every page, including each section's `_index.md` as an archive of its posts grouped by year (`/blog/`), and write each section's posts as an RSS feed (`/blog/feed.xml`, in `internal/site/feed.go`). The feed carries each post's full HTML, with site-relative links made absolute so they work in a feed reader.
 
 ## Layout
 
@@ -64,7 +64,7 @@ It won't overwrite an existing post, and the build fails if two posts end up wit
 | `internal/site/` | The generator: content loading, markdown, templates, assets, new posts |
 | `site.toml` | Site title, base URL, and menu |
 | `content/_index.md` | Homepage intro text |
-| `content/blog/` | Blog posts, served under `/blog/` |
+| `content/blog/` | Blog posts, served under `/blog/`, with an archive at `/blog/` and an RSS feed at `/blog/feed.xml` |
 | `content/404.md` | The not-found page, written to `/404.html`, which Netlify serves for any missing path |
 | `data/projects.toml` | Project links listed on the homepage |
 | `templates/` | Page templates (Go `html/template`) |

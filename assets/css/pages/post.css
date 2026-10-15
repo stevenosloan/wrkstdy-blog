@@ -6,3 +6,5 @@ pre.mermaid { background: none; padding: 0; text-align: center; --font-family: v
 pre.mermaid:not([data-processed]) { visibility: hidden; }
 
 .footnotes { font-size: var(--font-size-sub-1); color: var(--muted); }
+
+.archive > header h1 { margin-bottom: 0.4rem; }

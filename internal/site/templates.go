@@ -29,7 +29,7 @@ var funcs = template.FuncMap{
 	},
 }
 
-var pageKinds = []string{"home", "single"}
+var pageKinds = []string{"home", "archive", "single"}
 
 // loadTemplates parses base.html and partials/ once, then clones that set for
 // each page kind so every kind can define its own "main" block.
