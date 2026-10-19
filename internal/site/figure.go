@@ -33,7 +33,11 @@ var pageInfoKey = parser.NewContextKey()
 //	![Rowboat tied to the dock](dock.jpg)
 //	First morning: fog didn't lift until ten.
 //
-// Images in a page bundle are also pointed at their resized copies, with a srcset.
+// Images in a page bundle are also pointed at their resized copies, with a
+// srcset, and load lazily. An attribute block right after an image changes
+// that, for a photo near the top of the page:
+//
+//	![A friend on the trail](trail.jpg){loading=eager}
 type figureExtension struct{}
 
 func (figureExtension) Extend(m goldmark.Markdown) {
@@ -52,6 +56,7 @@ var (
 type pictureNode struct {
 	ast.BaseInline
 	sources []photoSet
+	sizes   string
 }
 
 func (n *pictureNode) Kind() ast.NodeKind { return kindPicture }
@@ -95,12 +100,16 @@ func (figureTransformer) Transform(doc *ast.Document, reader text.Reader, pc par
 		return ast.WalkContinue, nil
 	})
 
-	if page != nil && page.Bundle != "" {
-		for _, img := range images {
-			if err := page.usePhoto(img); err != nil {
-				pc.Set(figureErrKey, err)
-				return
-			}
+	for _, img := range images {
+		attrs, err := takeImageAttrs(img, reader.Source())
+		if err == nil && page != nil && page.Bundle != "" {
+			err = page.usePhoto(img, attrs)
+		} else if err == nil && attrs.loading != "" {
+			img.SetAttributeString("loading", attrs.loading)
+		}
+		if err != nil {
+			pc.Set(figureErrKey, err)
+			return
 		}
 	}
 	for _, p := range paragraphs {
@@ -109,6 +118,40 @@ func (figureTransformer) Transform(doc *ast.Document, reader text.Reader, pc par
 }
 
 var figureErrKey = parser.NewContextKey()
+
+// imageAttrs are the settings from an attribute block after an image.
+type imageAttrs struct {
+	loading string // "eager" or "lazy", or "" when not set
+}
+
+// takeImageAttrs reads an attribute block like {loading=eager} written right
+// after img, and removes it from the text so it isn't published.
+func takeImageAttrs(img *ast.Image, src []byte) (imageAttrs, error) {
+	var attrs imageAttrs
+	t, ok := img.NextSibling().(*ast.Text)
+	if !ok {
+		return attrs, nil
+	}
+	value := string(t.Value(src))
+	if !strings.HasPrefix(value, "{") {
+		return attrs, nil
+	}
+	end := strings.Index(value, "}")
+	if end < 0 {
+		return attrs, fmt.Errorf("image %q: attribute block has no closing }", img.Destination)
+	}
+	for _, field := range strings.Fields(value[1:end]) {
+		key, val, _ := strings.Cut(field, "=")
+		switch {
+		case key == "loading" && (val == "eager" || val == "lazy"):
+			attrs.loading = val
+		default:
+			return attrs, fmt.Errorf("image %q: unknown attribute %q (supported: loading=eager, loading=lazy)", img.Destination, field)
+		}
+	}
+	t.Segment = t.Segment.WithStart(t.Segment.Start + end + 1)
+	return attrs, nil
+}
 
 // toFigure replaces p with a figure holding its image, and its remaining lines
 // as a caption when the image is followed by a line break. An image with more
@@ -142,7 +185,7 @@ func toFigure(p *ast.Paragraph, src []byte) {
 
 // usePhoto points img at its file in the page bundle, resized, when its
 // destination is a relative path. Links elsewhere are left alone.
-func (page *pageInfo) usePhoto(img *ast.Image) error {
+func (page *pageInfo) usePhoto(img *ast.Image, attrs imageAttrs) error {
 	dest := string(img.Destination)
 	u, err := url.Parse(dest)
 	if err != nil || u.Scheme != "" || u.Host != "" || strings.HasPrefix(dest, "/") || dest == "" {
@@ -157,21 +200,30 @@ func (page *pageInfo) usePhoto(img *ast.Image) error {
 		return fmt.Errorf("image %q: %w", dest, err)
 	}
 
+	// Photos load lazily unless marked {loading=eager}, for one near the top of
+	// the page that shouldn't wait for layout to find it on screen.
+	sizes := photoSizes
+	if attrs.loading == "eager" {
+		sizes = photoSizesEager
+	}
+
 	src := ph.Fallback.Largest()
 	img.Destination = []byte(src.URL)
 	if srcset := ph.Fallback.Srcset(); srcset != "" {
 		img.SetAttributeString("srcset", srcset)
-		img.SetAttributeString("sizes", photoSizes)
+		img.SetAttributeString("sizes", sizes)
 	}
 	if src.Width > 0 {
 		img.SetAttributeString("width", strconv.Itoa(src.Width))
 		img.SetAttributeString("height", strconv.Itoa(src.Height))
 	}
-	img.SetAttributeString("loading", "lazy")
+	if sizes == photoSizes {
+		img.SetAttributeString("loading", "lazy")
+	}
 	img.SetAttributeString("decoding", "async")
 
 	if len(ph.Sources) > 0 {
-		pic := &pictureNode{sources: ph.Sources}
+		pic := &pictureNode{sources: ph.Sources, sizes: sizes}
 		img.Parent().ReplaceChild(img.Parent(), img, pic)
 		pic.AppendChild(pic, img)
 	}
@@ -195,9 +247,10 @@ func (r figureRenderer) RegisterFuncs(reg renderer.NodeRendererFuncRegisterer) {
 			return ast.WalkContinue, nil
 		}
 		w.WriteString("<picture>")
-		for _, s := range n.(*pictureNode).sources {
+		pic := n.(*pictureNode)
+		for _, s := range pic.sources {
 			fmt.Fprintf(w, "<source type=\"%s\" srcset=\"%s\" sizes=\"%s\">",
-				s.Type, html.EscapeString(s.Srcset()), photoSizes)
+				s.Type, html.EscapeString(s.Srcset()), pic.sizes)
 		}
 		return ast.WalkContinue, nil
 	})

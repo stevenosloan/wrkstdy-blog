@@ -50,9 +50,13 @@ var photoFormats = []struct {
 }
 
 // photoSizes is the sizes="" attribute for a resized photo. "auto" lets the
-// browser pick from the width the image is laid out at (it needs loading="lazy");
-// browsers that don't know it yet fall back to the rest.
-const photoSizes = "auto, (max-width: 42rem) 100vw, 40rem"
+// browser pick from the width the image is laid out at; browsers that don't know
+// it yet fall back to the rest. It only works with loading="lazy", so a photo
+// marked {loading=eager} gets photoSizesEager.
+const (
+	photoSizesEager = "(max-width: 42rem) 100vw, 40rem"
+	photoSizes      = "auto, " + photoSizesEager
+)
 
 // photo is an image from a page bundle as it's published: resized into several
 // widths in each of photoFormats plus a fallback, or, for formats that aren't

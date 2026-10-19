@@ -56,7 +56,14 @@ Refer to a photo by its filename, and write its note on the line right under it.
 First morning: fog didn't lift until *ten*.
 ```
 
-JPEGs and PNGs are resized to 640, 960, 1280 and 1920px wide (skipping any wider than the photo), each width encoded as AVIF (quality 50), WebP (quality 70) and a JPEG fallback (quality 80; PNGs stay PNG). They're served in a `<picture>`, so the browser takes the first format it supports, with `srcset`, `sizes="auto"` and `loading="lazy"`. The encoders ([gen2brain/avif](https://github.com/gen2brain/avif), [gen2brain/webp](https://github.com/gen2brain/webp)) are libavif and libwebp compiled to WebAssembly, so the build needs no C toolchain; they use a system copy instead when one is installed. Other formats are published as they are. Only photos a page refers to are published, and never the originals, so their EXIF data (including where a photo was taken) stays out of the site. The rotation phone cameras store in EXIF is applied before resizing.
+JPEGs and PNGs are resized to 640, 960, 1280 and 1920px wide (skipping any wider than the photo), each width encoded as AVIF (quality 50), WebP (quality 70) and a JPEG fallback (quality 80; PNGs stay PNG). They're served in a `<picture>`, so the browser takes the first format it supports, with `srcset`, `sizes="auto"` and `loading="lazy"`.
+
+Photos load lazily by default. For one near the top of the page, add `{loading=eager}` right after the image so it loads straight away (the build stops on anything else in braces, so a typo doesn't go unnoticed):
+
+```markdown
+![A friend on the trail](trail.jpg){loading=eager}
+Out on the trail, where these got talked about.
+``` The encoders ([gen2brain/avif](https://github.com/gen2brain/avif), [gen2brain/webp](https://github.com/gen2brain/webp)) are libavif and libwebp compiled to WebAssembly, so the build needs no C toolchain; they use a system copy instead when one is installed. Other formats are published as they are. Only photos a page refers to are published, and never the originals, so their EXIF data (including where a photo was taken) stays out of the site. The rotation phone cameras store in EXIF is applied before resizing.
 
 Resizing is slow (about 9 seconds for a 4K photo, mostly AVIF), so the results are kept in `.cache/images/` (not committed) and redone only when a photo changes. Netlify starts without that cache, so a deploy resizes every photo again. Exporting photos at around 2000px rather than straight off the camera keeps that quick. iPhone HEIC photos need converting to JPEG first.
 

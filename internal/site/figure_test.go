@@ -22,6 +22,10 @@ func TestFigures(t *testing.T) {
 			"<figure>\n<img src=\"/dock.jpg\" alt=\"Dock\">\n</figure>\n<p>A paragraph.</p>\n"},
 		{"text on the same line stays inline", "![Dock](/dock.jpg) and more",
 			"<p><img src=\"/dock.jpg\" alt=\"Dock\"> and more</p>\n"},
+		{"attribute block is applied and removed", "![Dock](/dock.jpg){loading=eager}\nFirst *morning*.",
+			"<figure>\n<img src=\"/dock.jpg\" alt=\"Dock\" loading=\"eager\">\n<figcaption>First <em>morning</em>.</figcaption>\n</figure>\n"},
+		{"attribute block before more text", "![Dock](/dock.jpg){loading=lazy} and more",
+			"<p><img src=\"/dock.jpg\" alt=\"Dock\" loading=\"lazy\"> and more</p>\n"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -33,6 +37,15 @@ func TestFigures(t *testing.T) {
 				t.Errorf("got  %q\nwant %q", got, tt.want)
 			}
 		})
+	}
+}
+
+func TestImageAttrErrors(t *testing.T) {
+	b := &builder{md: newMarkdown()}
+	for _, src := range []string{"![Dock](/dock.jpg){loading=eagre}", "![Dock](/dock.jpg){width=10}", "![Dock](/dock.jpg){loading=eager"} {
+		if _, err := b.renderMarkdown([]byte(src), nil); err == nil {
+			t.Errorf("render(%q): want an error", src)
+		}
 	}
 }
 
@@ -61,7 +74,7 @@ func TestBundlePhotos(t *testing.T) {
 	dir := filepath.Join(root, "content", "journal", "2026-10-15-lake-day")
 	writeJPEG(t, filepath.Join(dir, "dock.jpg"), 1000, 500)
 	writeJPEG(t, filepath.Join(dir, "unused.jpg"), 100, 100)
-	md := "---\ntitle: Lake day\n---\n\n![Dock](dock.jpg)\nFog until ten.\n"
+	md := "---\ntitle: Lake day\n---\n\n![Dock](dock.jpg){loading=eager}\nFog until ten.\n\n![Dock again](dock.jpg)\n"
 	if err := writeFile(filepath.Join(dir, "index.md"), []byte(md)); err != nil {
 		t.Fatal(err)
 	}
@@ -80,14 +93,15 @@ func TestBundlePhotos(t *testing.T) {
 	}
 	html := string(page.Content)
 	for _, want := range []string{
-		"<figure>\n" + `<picture><source type="image/avif" srcset="/journal/lake-day/dock.640w.avif 640w, /journal/lake-day/dock.960w.avif 960w" sizes="` + photoSizes + `">`,
+		"<figure>\n" + `<picture><source type="image/avif" srcset="/journal/lake-day/dock.640w.avif 640w, /journal/lake-day/dock.960w.avif 960w" sizes="` + photoSizesEager + `">`,
 		`<source type="image/webp" srcset="/journal/lake-day/dock.640w.webp 640w, /journal/lake-day/dock.960w.webp 960w"`,
 		`src="/journal/lake-day/dock.960w.jpg"`,
 		`srcset="/journal/lake-day/dock.640w.jpg 640w, /journal/lake-day/dock.960w.jpg 960w"`,
 		`decoding="async"></picture>`,
-		`sizes="` + photoSizes + `"`,
 		`width="960" height="480"`,
-		`loading="lazy"`,
+		// A photo marked {loading=eager} loads straight away; the rest are lazy, with sizes="auto".
+		`alt="Dock" srcset="/journal/lake-day/dock.640w.jpg 640w, /journal/lake-day/dock.960w.jpg 960w" sizes="` + photoSizesEager + `" width="960" height="480" decoding="async">`,
+		`alt="Dock again" srcset="/journal/lake-day/dock.640w.jpg 640w, /journal/lake-day/dock.960w.jpg 960w" sizes="` + photoSizes + `" width="960" height="480" loading="lazy" decoding="async">`,
 		"<figcaption>Fog until ten.</figcaption>",
 	} {
 		if !strings.Contains(html, want) {
