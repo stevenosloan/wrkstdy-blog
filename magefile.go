@@ -130,6 +130,19 @@ func New(
 	return nil
 }
 
+// Photos copies a photo, or a folder of them, into a post's folder: upright, in sRGB, at most 2560px, with metadata (including location) stripped.
+func Photos(
+	post string, // the post's folder, holding index.md, e.g. content/journal/2026-10-15-lake-day
+	from string, // a photo, or a folder of photos
+	replace *bool, // overwrite photos already in the post
+) error {
+	done, err := site.ImportPhotos(post, from, replace != nil && *replace)
+	for _, p := range done {
+		fmt.Printf("wrote %s (%dx%d)\n", p.Path, p.Width, p.Height)
+	}
+	return err
+}
+
 // prompt prints label and returns the trimmed line typed in reply. Hitting
 // enter, or reaching the end of piped input, returns "".
 func prompt(in *bufio.Reader, label string) (string, error) {
