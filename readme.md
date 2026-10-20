@@ -131,4 +131,4 @@ Write the talk-through around it as normal markdown.
 | `static/` | Copied as-is: `favicon.ico`, for clients that ask for it at the root |
 | `netlify.toml` | Netlify build settings (`npm ci`, then the build), pinned Go version, plugins and cache headers |
 | `netlify/plugins/photo-cache/` | Local Netlify plugin that keeps `.cache/images` between deploys |
-| `.github/workflows/test.yml` | Runs `mage test` and `mage build -drafts` on pushes to main and on pull requests |
+| `.github/workflows/test.yml` | Runs `mage test` and `mage build -drafts` on pushes to main and on pull requests, keeping `.cache/images` between runs |

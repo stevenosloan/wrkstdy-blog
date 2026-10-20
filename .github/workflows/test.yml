@@ -18,5 +18,14 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      # Encoded photos, so a run only encodes photos that are new or changed (the
+      # tests build the real site). Saved under a new key when the photos or the
+      # code that encodes them change; otherwise the nearest earlier cache is
+      # restored. The build prunes entries it hasn't used in 30 days.
+      - uses: actions/cache@v6
+        with:
+          path: .cache/images
+          key: photos-${{ hashFiles('content/**/*.jpg', 'content/**/*.jpeg', 'content/**/*.png', 'internal/site/images.go', 'internal/site/color.go') }}
+          restore-keys: photos-
       - run: go tool mage test
       - run: go tool mage build -drafts
