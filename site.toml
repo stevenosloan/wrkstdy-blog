@@ -7,3 +7,11 @@ language = "en-US"
 [[menu]]
 name = "blog"
 url = "/blog/"
+
+[[menu]]
+name = "journal"
+url = "/journal/"
+
+[[menu]]
+name = "recipes"
+url = "/recipes/"

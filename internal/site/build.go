@@ -8,6 +8,7 @@ import (
 	"maps"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
 
@@ -40,6 +41,15 @@ func (s *Site) Section(name string) *Section {
 	return s.sections[name]
 }
 
+// Sections returns every content section, by name.
+func (s *Site) Sections() []*Section {
+	var list []*Section
+	for _, name := range slices.Sorted(maps.Keys(s.sections)) {
+		list = append(list, s.sections[name])
+	}
+	return list
+}
+
 // Asset returns the fingerprinted URL and integrity hash for a file in assets/.
 func (s *Site) Asset(path string) (Asset, error) {
 	a, ok := s.assets[path]
@@ -66,6 +76,7 @@ type builder struct {
 	md         goldmark.Markdown
 	shortcodes *template.Template
 	pages      map[string]*template.Template // by kind: home, archive, single
+	photos     *photos                       // images from page bundles, resized
 }
 
 // Build renders the whole site into opts.Out and returns how many pages it wrote.
@@ -87,7 +98,7 @@ func Build(opts Options) (int, error) {
 		return 0, err
 	}
 
-	b := &builder{opts: opts, md: newMarkdown()}
+	b := &builder{opts: opts, md: newMarkdown(), photos: newPhotos(filepath.Join(root, ".cache", "images"))}
 	if err := b.loadTemplates(filepath.Join(root, "templates")); err != nil {
 		return 0, err
 	}
@@ -102,6 +113,12 @@ func Build(opts Options) (int, error) {
 	}
 	if err := copyDir(filepath.Join(root, "static"), opts.Out); err != nil {
 		return 0, fmt.Errorf("copying static: %w", err)
+	}
+	if err := b.photos.writeTo(opts.Out); err != nil {
+		return 0, fmt.Errorf("copying photos: %w", err)
+	}
+	if err := b.photos.prune(time.Now()); err != nil {
+		return 0, fmt.Errorf("pruning the photo cache: %w", err)
 	}
 	assets, err := fingerprintDir(filepath.Join(root, "assets"), opts.Out, "assets")
 	if err != nil {

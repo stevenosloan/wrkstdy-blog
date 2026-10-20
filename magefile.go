@@ -90,6 +90,7 @@ func Test() error {
 // New asks for a title and a date (default today) and creates a draft post slugged from the title.
 func New(
 	section *string, // folder under content/ to create the post in (default blog)
+	bundle *bool, // make a folder with index.md, to keep photos beside the post (default for journal)
 ) error {
 	in := bufio.NewReader(os.Stdin)
 	title, err := prompt(in, "Title: ")
@@ -117,12 +118,29 @@ func New(
 	if section != nil && *section != "" {
 		dir = *section
 	}
-	path, err := site.NewPost(".", dir, title, date)
+	asBundle := dir == "journal"
+	if bundle != nil {
+		asBundle = *bundle
+	}
+	path, err := site.NewPost(".", dir, title, date, asBundle)
 	if err != nil {
 		return err
 	}
 	fmt.Printf("created %s\n", path)
 	return nil
+}
+
+// Photos copies a photo, or a folder of them, into a post's folder: upright, in sRGB, at most 2560px, with metadata (including location) stripped.
+func Photos(
+	post string, // the post's folder, holding index.md, e.g. content/journal/2026-10-15-lake-day
+	from string, // a photo, or a folder of photos
+	replace *bool, // overwrite photos already in the post
+) error {
+	done, err := site.ImportPhotos(post, from, replace != nil && *replace)
+	for _, p := range done {
+		fmt.Printf("wrote %s (%dx%d)\n", p.Path, p.Width, p.Height)
+	}
+	return err
 }
 
 // prompt prints label and returns the trimmed line typed in reply. Hitting

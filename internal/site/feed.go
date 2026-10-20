@@ -3,6 +3,7 @@ package site
 import (
 	"encoding/xml"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 )
@@ -10,6 +11,11 @@ import (
 // FeedURL is where a section's RSS feed is written, like "/blog/feed.xml".
 func (s *Section) FeedURL() string {
 	return s.Index.URL + "feed.xml"
+}
+
+// FeedTitle names a section's feed in a reader, like "wrkstdy · journal".
+func (s *Section) FeedTitle(site *Site) string {
+	return site.Title + " · " + s.Index.Title
 }
 
 // Year is one year's worth of a section's posts, for the archive.
@@ -68,7 +74,7 @@ type rssItem struct {
 // writeFeed writes the section's posts as RSS to its FeedURL.
 func writeFeed(out string, site *Site, s *Section) error {
 	ch := rssChannel{
-		Title:       site.Title,
+		Title:       s.FeedTitle(site),
 		Link:        site.AbsURL(s.Index.URL),
 		Description: s.Index.Description,
 		Language:    site.Language,
@@ -109,8 +115,17 @@ func writeFeed(out string, site *Site, s *Section) error {
 // absLinks points site-relative links and images at the full URL, since a
 // feed reader shows posts away from the site and may not resolve them.
 func absLinks(html, base string) string {
-	return strings.NewReplacer(
+	html = strings.NewReplacer(
 		`href="/`, `href="`+base+`/`,
 		`src="/`, `src="`+base+`/`,
 	).Replace(html)
+	// srcset lists several URLs, so each one needs the base.
+	return srcsetRE.ReplaceAllStringFunc(html, func(attr string) string {
+		return srcsetURLRE.ReplaceAllString(attr, "${1}"+base+"/")
+	})
 }
+
+var (
+	srcsetRE    = regexp.MustCompile(`srcset="[^"]*"`)
+	srcsetURLRE = regexp.MustCompile(`(srcset="|,\s*)/`)
+)

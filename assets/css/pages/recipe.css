@@ -1,0 +1,16 @@
+/* ```recipe tables: ingredients on the left, each step to the right of what goes
+   into it, spanning their rows, down to the finished dish on the far right. */
+/* A table with many steps outgrows the text column, so it can widen to 64rem
+   (or the window, less the page gutters), centred on the column. One that fits
+   stays column-width, and past the window's width it scrolls. */
+.recipe-table {
+  --recipe-wide: min(64rem, 100vw - 2rem);
+  width: max-content; min-width: 100%; max-width: var(--recipe-wide);
+  position: relative; left: 50%; transform: translateX(-50%);
+  overflow-x: auto; margin: 0 0 1.25rem;
+}
+.recipe-table table { margin: 0; font-size: var(--font-size-sub-1); }
+.recipe-table td { border: 1px solid var(--rule); vertical-align: middle; }
+.recipe-table .ingredient { white-space: nowrap; }
+.recipe-table .step { background: var(--code-bg); min-width: 8rem; }
+.recipe-table .dish { color: var(--accent); font-weight: 500; }
