@@ -1,7 +1,7 @@
 ---
 title: "Photos: transcoding and lazy loading"
 description: "Teaching the generator to handle photos: page bundles, resizing, AVIF and WebP with a JPEG fallback, keeping location data out, and getting lazy loading and sizes=\"auto\" to work together."
-draft: true
+draft: false
 ---
 
 The site has two new sections: a [journal](/journal/), for photos and notes from trips, and [recipes](/recipes/), where the first one is [ssamjang wings](/recipes/ssamjang-wings/). Both lean on photos, but the generator didn't know what a photo was or how to handle them. Straight from the camera or phone they could be 5 MB or more, so dropping them in as-is wasn't an performant option.
