@@ -19,6 +19,7 @@ go tool mage test                  # go vet + tests
 go tool mage new                   # prompt for a title and start a draft post
 go tool mage new -section=journal  # same, as a folder for photos (see below)
 go tool mage new -section=recipes
+go tool mage photos <post folder> <photo or folder>   # import photos ready to commit (see below)
 ```
 
 Tasks live in `magefile.go`, and Mage is pinned in `go.mod` as a Go tool, so there's nothing to install.
@@ -49,6 +50,14 @@ It won't overwrite an existing post, and the build fails if two posts end up wit
 
 `go tool mage new -section=journal` makes a folder instead of a file: `content/journal/2026-10-15-lake-day/index.md`. That's a page bundle. The folder's name works like a post's filename (date, then slug, so it's served at `/journal/lake-day/`), and its photos go next to `index.md`. Any section can have bundles; pass `-bundle` to make one elsewhere, or `-bundle=false` for a plain journal post.
 
+Add photos with `go tool mage photos`, not by copying them in:
+
+```sh
+go tool mage photos content/journal/2026-10-15-lake-day ~/Desktop/lake-day
+```
+
+It takes a photo or a folder of them and writes each into the post, named after the original in lowercase. Each one is turned upright, converted to sRGB, scaled to at most 2560px, and saved with no metadata. The repo is public, so this keeps where a photo was taken out of it, and keeps 10 MB originals out of git. It won't overwrite a photo already in the post unless you pass `-replace`.
+
 Refer to a photo by its filename, and write its note on the line right under it. With no blank line between, the note becomes the photo's caption:
 
 ```markdown
@@ -56,16 +65,20 @@ Refer to a photo by its filename, and write its note on the line right under it.
 First morning: fog didn't lift until *ten*.
 ```
 
-JPEGs and PNGs are resized to 640, 960, 1280 and 1920px wide (skipping any wider than the photo), each width encoded as AVIF (quality 50), WebP (quality 70) and a JPEG fallback (quality 80; PNGs stay PNG). They're served in a `<picture>`, so the browser takes the first format it supports, with `srcset`, `sizes="auto"` and `loading="lazy"`.
+JPEGs and PNGs are resized to 640, 960 and 1280px wide (skipping any wider than the photo), each width encoded as AVIF (quality 50, 4:2:0 chroma), WebP (quality 70, method 6) and a JPEG fallback (quality 80; PNGs stay PNG). The text column is 640px, so that covers 1x and 2x screens, and phones at 3x, which are narrower than the column. They're served in a `<picture>`, so the browser takes the first format it supports, with `srcset`, `sizes="auto"` and `loading="lazy"`. The encoders ([gen2brain/avif](https://github.com/gen2brain/avif), [gen2brain/webp](https://github.com/gen2brain/webp)) are libavif and libwebp compiled to WebAssembly, so the build needs no C toolchain; they use a system copy instead when one is installed. Other formats are published as they are.
+
+They're published under `/assets/photos/`, mirroring the page's path, with a content hash in each name (`/assets/photos/recipes/ssamjang-wings/seasoned.1280w.3f2a9c1b04de.avif`), so like the rest of `/assets/` they can be cached forever. Only photos a page refers to are published, and never the originals, so their EXIF data (including where a photo was taken) stays out of the site. The rotation phone cameras store in EXIF is applied before resizing. Photos in Display P3, which phones often shoot in, are converted to sRGB: Go ignores color profiles and the published files don't carry one, so without that, browsers would show P3 colors muted. Any other profile stops the build with a message to export the photo as sRGB.
 
 Photos load lazily by default. For one near the top of the page, add `{loading=eager}` right after the image so it loads straight away (the build stops on anything else in braces, so a typo doesn't go unnoticed):
 
 ```markdown
 ![A friend on the trail](trail.jpg){loading=eager}
 Out on the trail, where these got talked about.
-``` The encoders ([gen2brain/avif](https://github.com/gen2brain/avif), [gen2brain/webp](https://github.com/gen2brain/webp)) are libavif and libwebp compiled to WebAssembly, so the build needs no C toolchain; they use a system copy instead when one is installed. Other formats are published as they are. Only photos a page refers to are published, and never the originals, so their EXIF data (including where a photo was taken) stays out of the site. The rotation phone cameras store in EXIF is applied before resizing.
+```
 
-Resizing is slow (about 9 seconds for a 4K photo, mostly AVIF), so the results are kept in `.cache/images/` (not committed) and redone only when a photo changes. Netlify starts without that cache, so a deploy resizes every photo again. Exporting photos at around 2000px rather than straight off the camera keeps that quick. iPhone HEIC photos need converting to JPEG first.
+Resizing is slow (several seconds a photo, mostly AVIF), so the results are kept in `.cache/images/` (not committed) and redone only when a photo changes. Entries no build has used in 30 days are pruned, so the cache doesn't only grow. On Netlify, a local build plugin (`netlify/plugins/photo-cache`) restores `.cache/images` before the build and saves it after, so a deploy only encodes new or changed photos. Importing with `mage photos`, which scales them to 2560px, keeps that quicker than encoding straight from the camera. iPhone HEIC photos need converting to JPEG first.
+
+`mage photos` and the build both decode photos with `openPhoto` (`internal/site/color.go`), which handles the rotation and the color conversion.
 
 ## Recipes
 
@@ -116,5 +129,6 @@ Write the talk-through around it as normal markdown.
 | `scripts/fonts.sh` | Rebuilds the variable fonts in `assets/fonts/` (needs `fonttools`); the output is committed |
 | `package.json` | Browser JS dependencies (mermaid, microlighter), pinned by `package-lock.json` |
 | `static/` | Copied as-is: `favicon.ico`, for clients that ask for it at the root |
-| `netlify.toml` | Netlify build settings (`npm ci`, then the build) and pinned Go version |
+| `netlify.toml` | Netlify build settings (`npm ci`, then the build), pinned Go version, plugins and cache headers |
+| `netlify/plugins/photo-cache/` | Local Netlify plugin that keeps `.cache/images` between deploys |
 | `.github/workflows/test.yml` | Runs `mage test` and `mage build -drafts` on pushes to main and on pull requests |

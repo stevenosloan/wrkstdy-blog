@@ -3,11 +3,13 @@ package site
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"image"
 	_ "image/jpeg" // registers JPEG with image.DecodeConfig
 	_ "image/png"
 	"io"
+	"io/fs"
 	"os"
 	"path"
 	"path/filepath"
@@ -16,6 +18,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/disintegration/imaging"
 	"github.com/gen2brain/avif" // also registers AVIF and WebP with image.DecodeConfig
@@ -23,16 +26,28 @@ import (
 )
 
 // photoWidths are the widths a photo is resized to. The content column is 40rem
-// (640px), so these cover screens from 1x to 3x. Widths wider than the photo are
-// skipped, so nothing is upscaled.
-var photoWidths = []int{640, 960, 1280, 1920}
+// (640px), so these cover 1x and 2x screens, and phones at 3x, which are
+// narrower than the column. A 1920px copy would only go to 3x screens at
+// desktop width, and cost as much as the rest together. Widths wider than the
+// photo are skipped, so nothing is upscaled.
+var photoWidths = []int{640, 960, 1280}
+
+// colorVersion is part of each cached photo's key; bump it when openPhoto
+// changes how pixels come out, so the cache is made again.
+const colorVersion = "srgb-1"
 
 const (
 	jpegQuality = 80
 	webpQuality = 70
 	avifQuality = 50
-	avifSpeed   = 6 // 0 (slowest, smallest) to 10; encoding AVIF is most of the time spent resizing
+	avifSpeed   = 6 // 0 (slowest, smallest) to 10; slower saves a few percent for several times the time
+	webpMethod  = 6 // 0 (fastest) to 6; the slowest is still quick, and a few percent smaller
 )
+
+// avifChroma halves the color resolution, as photo encoders normally do: it's
+// smaller and faster to encode than full color (4:4:4), which is what
+// gen2brain/avif falls back to when Options leaves it unset.
+const avifChroma = image.YCbCrSubsampleRatio420
 
 // photoFormats are the formats each width is also encoded in, best first, as
 // <source>s in a <picture>. The browser takes the first it supports, and falls
@@ -42,10 +57,10 @@ var photoFormats = []struct {
 	encode    func(io.Writer, image.Image) error
 }{
 	{".avif", "image/avif", func(w io.Writer, m image.Image) error {
-		return avif.Encode(w, m, avif.Options{Quality: avifQuality, QualityAlpha: avifQuality, Speed: avifSpeed})
+		return avif.Encode(w, m, avif.Options{Quality: avifQuality, QualityAlpha: avifQuality, Speed: avifSpeed, ChromaSubsampling: avifChroma})
 	}},
 	{".webp", "image/webp", func(w io.Writer, m image.Image) error {
-		return webp.Encode(w, m, webp.Options{Quality: webpQuality, Method: 4})
+		return webp.Encode(w, m, webp.Options{Quality: webpQuality, Method: webpMethod})
 	}},
 }
 
@@ -80,9 +95,9 @@ type photoVariant struct {
 // Largest is the variant used for src="", the fallback for anything that ignores srcset.
 func (s photoSet) Largest() photoVariant { return s.Variants[len(s.Variants)-1] }
 
-// Srcset is the srcset="" attribute, or "" when there's only one file without a known width.
+// Srcset is the srcset="" attribute, or "" when there's only one file to pick from.
 func (s photoSet) Srcset() string {
-	if len(s.Variants) == 1 && s.Variants[0].Width == 0 {
+	if len(s.Variants) < 2 {
 		return ""
 	}
 	parts := make([]string, len(s.Variants))
@@ -97,9 +112,32 @@ func (s photoSet) Srcset() string {
 // above, and only made again when one of those changes. Originals are never
 // published: re-encoding drops their EXIF data, which can hold where a photo was
 // taken.
+//
+// Published photos go under photosURL, mirroring the page's path, with a hash
+// of their content in the name, like
+// /assets/photos/recipes/ssamjang-wings/seasoned.1280w.3f2a9c1b04de.avif. A
+// changed photo gets a new name, so like everything else under /assets/, they
+// can be cached forever.
 type photos struct {
 	cacheDir string
 	copies   map[string]string // output path (site-relative URL) → file to copy there
+}
+
+const photosURL = "/assets/photos"
+
+// publish arranges for file to be copied into the site as name (like
+// "seasoned.1280w.avif") under the page at dirURL, and returns its URL, with a
+// hash of its content added before the extension.
+func (p *photos) publish(file, dirURL, name string) (string, error) {
+	data, err := os.ReadFile(file)
+	if err != nil {
+		return "", err
+	}
+	sum := sha256.Sum256(data)
+	ext := filepath.Ext(name)
+	url := path.Join(photosURL, dirURL, strings.TrimSuffix(name, ext)+"."+hex.EncodeToString(sum[:])[:12]+ext)
+	p.copies[url] = file
+	return url, nil
 }
 
 func newPhotos(cacheDir string) *photos {
@@ -115,12 +153,17 @@ func (p *photos) add(src, dirURL string) (*photo, error) {
 	ext := strings.ToLower(filepath.Ext(src))
 	name := strings.TrimSuffix(filepath.Base(src), filepath.Ext(src))
 	if !resizable[ext] {
-		if _, err := os.Stat(src); err != nil {
+		url, err := p.publish(src, dirURL, filepath.Base(src))
+		if err != nil {
 			return nil, err
 		}
-		url := path.Join(dirURL, filepath.Base(src))
-		p.copies[url] = src
-		return &photo{Fallback: photoSet{Variants: []photoVariant{{URL: url}}}}, nil
+		v := photoVariant{URL: url}
+		// Its size, when it's a format Go can read (WebP and AVIF, not SVG), so
+		// the page can save room for it before it loads.
+		if cfg, err := decodeConfig(src); err == nil {
+			v.Width, v.Height = cfg.Width, cfg.Height
+		}
+		return &photo{Fallback: photoSet{Variants: []photoVariant{v}}}, nil
 	}
 
 	dir, err := p.cached(src)
@@ -139,8 +182,10 @@ func (p *photos) add(src, dirURL string) (*photo, error) {
 			return nil, err
 		}
 		outExt := filepath.Ext(e.Name())
-		url := path.Join(dirURL, fmt.Sprintf("%s.%dw%s", name, cfg.Width, outExt))
-		p.copies[url] = file
+		url, err := p.publish(file, dirURL, fmt.Sprintf("%s.%dw%s", name, cfg.Width, outExt))
+		if err != nil {
+			return nil, err
+		}
 		if sets[outExt] == nil {
 			sets[outExt] = &photoSet{}
 		}
@@ -183,15 +228,15 @@ func (p *photos) cached(src string) (string, error) {
 	}
 	h := sha256.New()
 	h.Write(data)
-	fmt.Fprint(h, photoWidths, jpegQuality, webpQuality, avifQuality, avifSpeed)
+	fmt.Fprint(h, photoWidths, jpegQuality, webpQuality, webpMethod, avifQuality, avifSpeed, avifChroma, colorVersion)
 	dir := filepath.Join(p.cacheDir, hex.EncodeToString(h.Sum(nil))[:16])
 	if _, err := os.Stat(dir); err == nil {
-		return dir, nil
+		// Marks it as used, so prune keeps it.
+		now := time.Now()
+		return dir, os.Chtimes(dir, now, now)
 	}
 
-	// AutoOrientation applies the EXIF rotation phone cameras rely on, since the
-	// re-encoded file won't carry it.
-	img, err := imaging.Open(src, imaging.AutoOrientation(true))
+	img, err := openPhoto(src)
 	if err != nil {
 		return "", err
 	}
@@ -294,6 +339,42 @@ func decodeConfig(file string) (image.Config, error) {
 	defer f.Close()
 	cfg, _, err := image.DecodeConfig(f)
 	return cfg, err
+}
+
+// cacheMaxAge is how long a cached photo is kept after a build last used it.
+// It's long enough that a photo in a draft, or in a post that was taken down
+// for a while, doesn't have to be encoded again; anything older is likely a
+// photo that's since been edited or replaced.
+const cacheMaxAge = 30 * 24 * time.Hour
+
+// prune deletes cached photos no build has used in cacheMaxAge, and temporary
+// folders left by an interrupted build. Without it, the cache only grows, and
+// on Netlify, the whole cache is restored and saved on every deploy.
+func (p *photos) prune(now time.Time) error {
+	entries, err := os.ReadDir(p.cacheDir)
+	if errors.Is(err, fs.ErrNotExist) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	for _, e := range entries {
+		info, err := e.Info()
+		if err != nil {
+			return err
+		}
+		age := now.Sub(info.ModTime())
+		stale := age > cacheMaxAge
+		if strings.HasPrefix(e.Name(), "tmp-") {
+			stale = age > time.Hour
+		}
+		if stale {
+			if err := os.RemoveAll(filepath.Join(p.cacheDir, e.Name())); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 // writeTo copies every published photo into out.

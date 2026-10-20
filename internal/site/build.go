@@ -117,6 +117,9 @@ func Build(opts Options) (int, error) {
 	if err := b.photos.writeTo(opts.Out); err != nil {
 		return 0, fmt.Errorf("copying photos: %w", err)
 	}
+	if err := b.photos.prune(time.Now()); err != nil {
+		return 0, fmt.Errorf("pruning the photo cache: %w", err)
+	}
 	assets, err := fingerprintDir(filepath.Join(root, "assets"), opts.Out, "assets")
 	if err != nil {
 		return 0, fmt.Errorf("fingerprinting assets: %w", err)

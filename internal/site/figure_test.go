@@ -1,14 +1,18 @@
 package site
 
 import (
+	"bytes"
 	"image"
 	"image/color"
 	"image/jpeg"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/gen2brain/webp"
 )
 
 func TestFigures(t *testing.T) {
@@ -74,7 +78,17 @@ func TestBundlePhotos(t *testing.T) {
 	dir := filepath.Join(root, "content", "journal", "2026-10-15-lake-day")
 	writeJPEG(t, filepath.Join(dir, "dock.jpg"), 1000, 500)
 	writeJPEG(t, filepath.Join(dir, "unused.jpg"), 100, 100)
-	md := "---\ntitle: Lake day\n---\n\n![Dock](dock.jpg){loading=eager}\nFog until ten.\n\n![Dock again](dock.jpg)\n"
+	if err := writeFile(filepath.Join(dir, "icon.svg"), []byte("<svg/>")); err != nil {
+		t.Fatal(err)
+	}
+	var crop bytes.Buffer
+	if err := webp.Encode(&crop, image.NewRGBA(image.Rect(0, 0, 30, 20)), webp.Options{Lossless: true}); err != nil {
+		t.Fatal(err)
+	}
+	if err := writeFile(filepath.Join(dir, "crop.webp"), crop.Bytes()); err != nil {
+		t.Fatal(err)
+	}
+	md := "---\ntitle: Lake day\n---\n\n![Dock](dock.jpg){loading=eager}\nFog until ten.\n\n![Dock again](dock.jpg)\n\n![Icon](icon.svg)\n\n![Crop](crop.webp)\n"
 	if err := writeFile(filepath.Join(dir, "index.md"), []byte(md)); err != nil {
 		t.Fatal(err)
 	}
@@ -91,18 +105,28 @@ func TestBundlePhotos(t *testing.T) {
 	if page.URL != "/journal/lake-day/" || !page.Date.Equal(time.Date(2026, 10, 15, 0, 0, 0, 0, time.UTC)) {
 		t.Errorf("URL %q date %v, want the folder's name to give both", page.URL, page.Date)
 	}
+	// Every published photo has a content hash in its name. Checked here, then
+	// taken out so the expected HTML below can be written plainly.
 	html := string(page.Content)
+	if !regexp.MustCompile(`"/assets/photos/journal/lake-day/dock\.960w\.[0-9a-f]{12}\.jpg"`).MatchString(html) {
+		t.Errorf("want photos under /assets/photos with a hash in their names:\n%s", html)
+	}
+	html = photoHash.ReplaceAllString(html, ".")
 	for _, want := range []string{
-		"<figure>\n" + `<picture><source type="image/avif" srcset="/journal/lake-day/dock.640w.avif 640w, /journal/lake-day/dock.960w.avif 960w" sizes="` + photoSizesEager + `">`,
-		`<source type="image/webp" srcset="/journal/lake-day/dock.640w.webp 640w, /journal/lake-day/dock.960w.webp 960w"`,
-		`src="/journal/lake-day/dock.960w.jpg"`,
-		`srcset="/journal/lake-day/dock.640w.jpg 640w, /journal/lake-day/dock.960w.jpg 960w"`,
+		"<figure>\n" + `<picture><source type="image/avif" srcset="/assets/photos/journal/lake-day/dock.640w.avif 640w, /assets/photos/journal/lake-day/dock.960w.avif 960w" sizes="` + photoSizesEager + `">`,
+		`<source type="image/webp" srcset="/assets/photos/journal/lake-day/dock.640w.webp 640w, /assets/photos/journal/lake-day/dock.960w.webp 960w"`,
+		`src="/assets/photos/journal/lake-day/dock.960w.jpg"`,
+		`srcset="/assets/photos/journal/lake-day/dock.640w.jpg 640w, /assets/photos/journal/lake-day/dock.960w.jpg 960w"`,
 		`decoding="async"></picture>`,
 		`width="960" height="480"`,
 		// A photo marked {loading=eager} loads straight away; the rest are lazy, with sizes="auto".
-		`alt="Dock" srcset="/journal/lake-day/dock.640w.jpg 640w, /journal/lake-day/dock.960w.jpg 960w" sizes="` + photoSizesEager + `" width="960" height="480" decoding="async">`,
-		`alt="Dock again" srcset="/journal/lake-day/dock.640w.jpg 640w, /journal/lake-day/dock.960w.jpg 960w" sizes="` + photoSizes + `" width="960" height="480" loading="lazy" decoding="async">`,
+		`alt="Dock" srcset="/assets/photos/journal/lake-day/dock.640w.jpg 640w, /assets/photos/journal/lake-day/dock.960w.jpg 960w" sizes="` + photoSizesEager + `" width="960" height="480" decoding="async">`,
+		`alt="Dock again" srcset="/assets/photos/journal/lake-day/dock.640w.jpg 640w, /assets/photos/journal/lake-day/dock.960w.jpg 960w" sizes="` + photoSizes + `" width="960" height="480" loading="lazy" decoding="async">`,
 		"<figcaption>Fog until ten.</figcaption>",
+		// Formats that aren't resized are published as they are, without a srcset.
+		`<img src="/assets/photos/journal/lake-day/icon.svg" alt="Icon" loading="lazy" decoding="async">`,
+		// ...with their size when Go can read it.
+		`<img src="/assets/photos/journal/lake-day/crop.webp" alt="Crop" width="30" height="20" loading="lazy" decoding="async">`,
 	} {
 		if !strings.Contains(html, want) {
 			t.Errorf("page HTML is missing %s:\n%s", want, html)
@@ -112,12 +136,16 @@ func TestBundlePhotos(t *testing.T) {
 	if err := b.photos.writeTo(out); err != nil {
 		t.Fatal(err)
 	}
-	files, _ := filepath.Glob(filepath.Join(out, "journal", "lake-day", "*"))
-	if len(files) != 6 {
-		t.Errorf("published %v, want only two sizes of dock.jpg in three formats (not the original, nor the unused photo)", files)
+	files, _ := filepath.Glob(filepath.Join(out, "assets", "photos", "journal", "lake-day", "*"))
+	if len(files) != 8 {
+		t.Errorf("published %v, want two sizes of dock.jpg in three formats, icon.svg and crop.webp (not the original, nor the unused photo)", files)
 	}
 	for _, ext := range []string{".jpg", ".webp", ".avif"} {
-		cfg, err := decodeConfig(filepath.Join(out, "journal", "lake-day", "dock.640w"+ext))
+		matches, _ := filepath.Glob(filepath.Join(out, "assets", "photos", "journal", "lake-day", "dock.640w.*"+ext))
+		if len(matches) != 1 {
+			t.Fatalf("dock.640w.*%s: found %v", ext, matches)
+		}
+		cfg, err := decodeConfig(matches[0])
 		if err != nil || cfg.Width != 640 || cfg.Height != 320 {
 			t.Errorf("dock.640w%s is %dx%d (%v), want 640x320", ext, cfg.Width, cfg.Height, err)
 		}
@@ -131,6 +159,26 @@ func TestBundlePhotos(t *testing.T) {
 	writeFile(filepath.Join(dir, "index.md"), []byte("![Up](../secret.jpg)\n"))
 	if _, err := b.loadContent(filepath.Join(root, "content")); err == nil {
 		t.Error("want an error for a photo outside the bundle")
+	}
+}
+
+// photoHash matches the content hash in a published photo's name.
+var photoHash = regexp.MustCompile(`\.[0-9a-f]{12}\.`)
+
+func TestPublishedPhotoNames(t *testing.T) {
+	dir := t.TempDir()
+	a, b := filepath.Join(dir, "a"), filepath.Join(dir, "b")
+	writeFile(a, []byte("one"))
+	writeFile(b, []byte("two"))
+	p := newPhotos(dir)
+	urlA, _ := p.publish(a, "/recipes/wings/", "seasoned.640w.avif")
+	urlA2, _ := p.publish(a, "/recipes/wings/", "seasoned.640w.avif")
+	urlB, _ := p.publish(b, "/recipes/wings/", "seasoned.640w.avif")
+	if !regexp.MustCompile(`^/assets/photos/recipes/wings/seasoned\.640w\.[0-9a-f]{12}\.avif$`).MatchString(urlA) {
+		t.Errorf("url = %q", urlA)
+	}
+	if urlA != urlA2 || urlA == urlB {
+		t.Errorf("same content should give the same name and different content a new one: %q %q %q", urlA, urlA2, urlB)
 	}
 }
 
@@ -151,5 +199,50 @@ func TestAbsLinksSrcset(t *testing.T) {
 	want := `<img src="https://x.com/a.960w.jpg" srcset="https://x.com/a.640w.jpg 640w, https://x.com/a.960w.jpg 960w">`
 	if got != want {
 		t.Errorf("got  %s\nwant %s", got, want)
+	}
+}
+
+func TestPrunePhotoCache(t *testing.T) {
+	cache := t.TempDir()
+	now := time.Now()
+	old := now.Add(-cacheMaxAge - time.Hour)
+	backdate := func(dir string, mtime time.Time) {
+		t.Helper()
+		if err := os.MkdirAll(dir, 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.Chtimes(dir, mtime, mtime); err != nil {
+			t.Fatal(err)
+		}
+	}
+	backdate(filepath.Join(cache, "fresh"), now.Add(-time.Hour))
+	backdate(filepath.Join(cache, "stale"), old)
+	backdate(filepath.Join(cache, "tmp-new"), now)
+	backdate(filepath.Join(cache, "tmp-old"), now.Add(-2*time.Hour))
+
+	// An old entry that a build uses again is marked as used, and kept.
+	p := newPhotos(cache)
+	src := filepath.Join(t.TempDir(), "a.jpg")
+	writeJPEG(t, src, 100, 100)
+	used, err := p.cached(src)
+	if err != nil {
+		t.Fatal(err)
+	}
+	backdate(used, old)
+	if _, err := p.cached(src); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := p.prune(now.Add(time.Minute)); err != nil {
+		t.Fatal(err)
+	}
+	for name, want := range map[string]bool{"fresh": true, "stale": false, "tmp-new": true, "tmp-old": false, filepath.Base(used): true} {
+		_, err := os.Stat(filepath.Join(cache, name))
+		if got := err == nil; got != want {
+			t.Errorf("%s kept = %v, want %v", name, got, want)
+		}
+	}
+	if err := newPhotos(filepath.Join(cache, "missing")).prune(now); err != nil {
+		t.Errorf("pruning a cache that doesn't exist yet: %v", err)
 	}
 }
