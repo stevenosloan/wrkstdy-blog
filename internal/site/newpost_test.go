@@ -26,11 +26,11 @@ func TestSlugify(t *testing.T) {
 func TestNewPost(t *testing.T) {
 	root := t.TempDir()
 	date := time.Date(2026, 10, 12, 0, 0, 0, 0, time.UTC)
-	path, err := NewPost(root, "blog", "Hello, world", date, false)
+	path, err := NewPost(root, "blog", "Hello, world", date)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if want := filepath.Join(root, "content", "blog", "2026-10-12-hello-world.md"); path != want {
+	if want := filepath.Join(root, "content", "blog", "2026-10-12-hello-world", "index.md"); path != want {
 		t.Errorf("path = %q, want %q", path, want)
 	}
 	body, err := os.ReadFile(path)
@@ -40,22 +40,15 @@ func TestNewPost(t *testing.T) {
 	if !strings.Contains(string(body), `title: "Hello, world"`) {
 		t.Errorf("front matter missing title:\n%s", body)
 	}
-	if _, err := NewPost(root, "blog", "Hello world", date, false); err == nil {
+	if _, err := NewPost(root, "blog", "Hello world", date); err == nil {
 		t.Error("second post with the same slug should fail, not overwrite")
 	}
-}
 
-func TestNewPostBundle(t *testing.T) {
-	root := t.TempDir()
-	date := time.Date(2026, 10, 15, 0, 0, 0, 0, time.UTC)
-	path, err := NewPost(root, "journal", "Lake day", date, true)
-	if err != nil {
+	// A plain-file post with the same name would publish to the same URL.
+	if err := writeFile(filepath.Join(root, "content", "blog", "2026-10-13-old.md"), []byte("old")); err != nil {
 		t.Fatal(err)
 	}
-	if want := filepath.Join(root, "content", "journal", "2026-10-15-lake-day", "index.md"); path != want {
-		t.Errorf("path = %q, want %q", path, want)
-	}
-	if _, err := NewPost(root, "journal", "Lake day", date, false); err == nil {
-		t.Error("a plain post beside a bundle of the same name should fail, since both publish to one URL")
+	if _, err := NewPost(root, "blog", "Old", date.AddDate(0, 0, 1)); err == nil {
+		t.Error("a folder post beside a plain file of the same name should fail")
 	}
 }

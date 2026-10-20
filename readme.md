@@ -32,9 +32,9 @@ go tool mage new
 # Date [2026-10-13]:              (enter for today, or type YYYY-MM-DD)
 ```
 
-That creates `content/blog/2026-10-13-building-a-blog-on-purpose.md` as a draft, named with the date and a slug made from the title. Remove `draft: true` to publish it.
+That creates `content/blog/2026-10-13-building-a-blog-on-purpose/index.md` as a draft: a folder named with the date and a slug made from the title, so the post's photos can sit beside it. Remove `draft: true` to publish it.
 
-The date in the filename is the post's date, and it's left out of the URL, so that post is served at `/blog/building-a-blog-on-purpose/`. To re-date a post, rename the file, or set `date:` in its front matter, which wins over the filename.
+The date in the folder's name is the post's date, and it's left out of the URL, so that post is served at `/blog/building-a-blog-on-purpose/`. To re-date a post, rename the folder, or set `date:` in its front matter, which wins over the name.
 
 Pass `-section` to put it somewhere other than `content/blog/`, e.g. `go tool mage new -section=notes`.
 
@@ -48,7 +48,7 @@ It won't overwrite an existing post, and the build fails if two posts end up wit
 
 ## Journal entries and photos
 
-`go tool mage new -section=journal` makes a folder instead of a file: `content/journal/2026-10-15-lake-day/index.md`. That's a page bundle. The folder's name works like a post's filename (date, then slug, so it's served at `/journal/lake-day/`), and its photos go next to `index.md`. Any section can have bundles; pass `-bundle` to make one elsewhere, or `-bundle=false` for a plain journal post.
+Every post is a folder (a page bundle), like `content/journal/2026-10-15-lake-day/index.md`, so its photos go next to `index.md`. `go tool mage new -section=journal` starts one. The build still reads a post that's a single `.md` file, but `mage new` doesn't make them.
 
 Add photos with `go tool mage photos`, not by copying them in:
 
@@ -99,7 +99,7 @@ Write the talk-through around it as normal markdown.
 
 ## Styleguide
 
-`/blog/styleguide/` (from `content/blog/2026-10-11-styleguide.md`) shows the palette, type, and every styled element. Check it after changing `main.css`. It's a draft, so run `go tool mage serve -drafts` to see it.
+`/blog/styleguide/` (from `content/blog/2026-10-11-styleguide/index.md`) shows the palette, type, and every styled element. Check it after changing `main.css`. It's a draft, so run `go tool mage serve -drafts` to see it.
 
 ## How the build works
 
@@ -107,7 +107,7 @@ Write the talk-through around it as normal markdown.
 
 1. Read `site.toml` and `data/projects.toml`.
 2. Parse `templates/`: `base.html` and `partials/` once, then one copy per page kind (`home`, `archive`, `single`), each defining its own `main` block.
-3. Walk `content/`. Each `.md` file has YAML front matter split off and its body rendered by [goldmark](https://github.com/yuin/goldmark). `_index.md` makes a folder a section (posts in `content/blog/` are served under `/blog/`). A leading `YYYY-MM-DD-` in a filename becomes the page's date and is dropped from its URL. A folder holding `index.md` is a page bundle, named by the folder; the photos it refers to are resized (`internal/site/images.go`).
+3. Walk `content/`. Each `.md` file has YAML front matter split off and its body rendered by [goldmark](https://github.com/yuin/goldmark). `_index.md` makes a folder a section (posts in `content/blog/` are served under `/blog/`). A folder holding `index.md` is a post (a page bundle), named by the folder; the photos it refers to are resized (`internal/site/images.go`). A leading `YYYY-MM-DD-` in a post's folder name (or the filename, for a single-file post) becomes its date and is dropped from its URL.
 4. Wipe `public/`, copy `static/` and the resized photos into it, and write each file in `assets/` under a content-hashed name in `public/assets/`. [esbuild](https://esbuild.github.io/) (`internal/site/bundle.go`) builds the CSS and JS: each file in `assets/css/` and `assets/js/` is an entry point, minified, with JS bundled with what it imports from `node_modules/` and code-split. `serve` keeps one esbuild context between rebuilds and writes unminified files with source maps and unhashed names, so devtools breakpoints survive a rebuild. Fonts referenced by `url()` in the CSS are hashed by esbuild and the `url()` rewritten. Icons and anything else are hashed as they are.
 5. Render every page, including each section's `_index.md` as an archive of its posts grouped by year (`/blog/`), and write each section's posts as an RSS feed (`/blog/feed.xml`, in `internal/site/feed.go`). The feed carries each post's full HTML, with site-relative links made absolute so they work in a feed reader.
 
@@ -119,7 +119,7 @@ Write the talk-through around it as normal markdown.
 | `internal/site/` | The generator: content loading, markdown, templates, assets, new posts |
 | `site.toml` | Site title, base URL, and menu |
 | `content/_index.md` | Homepage intro text |
-| `content/blog/` | Blog posts, served under `/blog/`, with an archive at `/blog/` and an RSS feed at `/blog/feed.xml` |
+| `content/blog/` | Blog posts, a folder each, served under `/blog/`, with an archive at `/blog/` and an RSS feed at `/blog/feed.xml` |
 | `content/journal/` | Trip entries, each a folder with its photos, served under `/journal/` with its own archive and feed |
 | `content/recipes/` | Recipes, served under `/recipes/` with its own archive and feed |
 | `content/404.md` | The not-found page, written to `/404.html`, which Netlify serves for any missing path |
