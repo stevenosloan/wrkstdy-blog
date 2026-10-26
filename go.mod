@@ -16,9 +16,13 @@ require (
 
 require (
 	github.com/ebitengine/purego v0.10.1 // indirect
+	github.com/stevenosloan/plugh v0.1.0 // indirect
 	github.com/tetratelabs/wazero v1.12.0 // indirect
 	golang.org/x/image v0.47.0 // indirect
 	golang.org/x/sys v0.49.0 // indirect
 )
 
-tool github.com/magefile/mage
+tool (
+	github.com/magefile/mage
+	github.com/stevenosloan/plugh/cmd/plugh
+)

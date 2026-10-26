@@ -1,0 +1,56 @@
+# The router for wrkstdy.com.
+# Chunks live in voice/, one file per id.
+
+# Who's writing and who's reading. role and audience below are the defaults;
+# a type can name its own. These are drafts, inferred from the chunks.
+personas:
+  me:
+    description: >
+      Steven, a developer writing a personal log. Works things out in public,
+      keeps the dead ends, and would rather be useful than impressive.
+  curious-dev:
+    description: >
+      A developer who found the post through a search or a link. Knows the
+      basics, hasn't solved this exact problem, and wants the choices and the
+      reasons more than a tutorial. Skims headings first.
+  home-cook:
+    description: >
+      Someone about to cook, maybe with the page open on the counter. Comfortable
+      in a kitchen, not a chef. Wants a little story, then exact amounts and
+      steps they can follow with wet hands.
+
+role: me
+audience: curious-dev
+
+types:
+  blog:
+    match: content/blog/
+    always:
+      - voice-core
+      - punctuation
+      - word-choice
+      - blog-post
+    if_relevant:
+      - photo-captions
+    budget: 1500 # words
+
+  recipe:
+    match: content/recipes/
+    always:
+      - voice-core
+      - punctuation
+      - recipe-story
+      - recipe-steps
+    audience: home-cook
+    if_relevant:
+      - photo-captions
+    budget: 1200
+
+  # Not a folder: a job.
+  description:
+    doc: the front matter description, shown on the homepage
+    always:
+      - voice-core
+      - word-choice
+      - description
+    budget: 800
