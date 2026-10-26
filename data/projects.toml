@@ -4,4 +4,14 @@
 [[projects]]
   name = "wrkstdy.com"
   url = "/"
-  description = "This site. Golang, markdown, and a forest palette."
+  description = "This site. Go, markdown, and a forest palette."
+
+[[projects]]
+  name = "tributary"
+  url = "https://tributary-site.fly.dev/"
+  description = "Current conditions on the water, for stream fishing in the US."
+
+[[projects]]
+  name = "plugh"
+  url = "https://github.com/stevenosloan/plugh"
+  description = "Voice and tone guidelines, loaded only where they apply. A Claude Code plugin and a Go module."
