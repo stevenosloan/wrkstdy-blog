@@ -1,7 +1,7 @@
 ---
 title: "plugh, tracking voice and tone"
 description: "Why I split my writing rules into small chunks, routed by what's being written, so AI only reads the ones that apply. Plus the checks that catch my usual slips, and where they don't."
-draft: true
+draft: false
 ---
 
 Two weeks ago, alongside the first post here, I started a file called `notes/style-guide.md`. It was a scratchpad: a handful of rules about dashes, slashes, and the word "markdown", and two of them ended with "Common slip of mine." It wasn't a style guide yet, just a list of things I either got wrong or disagreed with in how AI wrote them.
