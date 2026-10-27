@@ -79,6 +79,32 @@ func TestAlerts(t *testing.T) {
 	}
 }
 
+func TestTodos(t *testing.T) {
+	b := &builder{md: newMarkdown()}
+	draft := &pageInfo{Draft: true}
+	tests := []struct {
+		name, src, want string
+		page            *pageInfo
+	}{
+		{"draft", "<!-- TODO(steven): the opening. -->", "<div class=\"alert alert-todo\">\n<p class=\"alert-title\">TODO</p>\n<p>the opening.</p>\n</div>\n", draft},
+		{"no name", "<!-- TODO: fix <this> -->", "<div class=\"alert alert-todo\">\n<p class=\"alert-title\">TODO</p>\n<p>fix &lt;this&gt;</p>\n</div>\n", draft},
+		{"several lines", "<!-- TODO:\nfirst\nsecond -->", "<div class=\"alert alert-todo\">\n<p class=\"alert-title\">TODO</p>\n<p>first\nsecond</p>\n</div>\n", draft},
+		{"other comment", "<!-- just a note -->", "<!-- raw HTML omitted -->\n", draft},
+		{"published", "<!-- TODO: the opening. -->", "<!-- raw HTML omitted -->\n", &pageInfo{}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := b.renderMarkdown([]byte(tt.src), tt.page)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if got != tt.want {
+				t.Errorf("got  %q\nwant %q", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestSplitDatePrefix(t *testing.T) {
 	tests := []struct {
 		name, date, slug string

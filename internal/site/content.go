@@ -220,7 +220,7 @@ func (b *builder) loadPage(path, name, bundle string, urlFor func(slug string) s
 	}
 	url := urlFor(slug)
 
-	html, err := b.renderMarkdown(body, &pageInfo{URL: url, Bundle: bundle, photos: b.photos})
+	html, err := b.renderMarkdown(body, &pageInfo{URL: url, Bundle: bundle, Draft: fm.Draft, photos: b.photos})
 	if err != nil {
 		return nil, err
 	}

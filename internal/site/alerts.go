@@ -28,7 +28,7 @@ var kindAlert = ast.NewNodeKind("Alert")
 // alertNode takes the place of the blockquote and holds its children.
 type alertNode struct {
 	ast.BaseBlock
-	kind string // lowercase: note, tip, important, warning, caution
+	kind string // lowercase: note, tip, important, warning, caution, or todo (see todo.go)
 }
 
 func (n *alertNode) Kind() ast.NodeKind { return kindAlert }
@@ -101,6 +101,9 @@ func (alertRenderer) render(w util.BufWriter, _ []byte, n ast.Node, entering boo
 	a := n.(*alertNode)
 	if entering {
 		title := strings.ToUpper(a.kind[:1]) + a.kind[1:]
+		if a.kind == "todo" {
+			title = "TODO"
+		}
 		fmt.Fprintf(w, "<div class=\"alert alert-%s\">\n<p class=\"alert-title\">%s</p>\n", a.kind, title)
 	} else {
 		w.WriteString("</div>\n")

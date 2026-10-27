@@ -21,6 +21,7 @@ import (
 type pageInfo struct {
 	URL    string  // where the page is published, like "/journal/lake-day/"
 	Bundle string  // the page's folder when it's a bundle (folder/index.md), else ""
+	Draft  bool    // draft: true; TODO comments show (see todo.go)
 	photos *photos // resizes the bundle's images
 }
 

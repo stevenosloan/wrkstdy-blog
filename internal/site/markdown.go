@@ -18,7 +18,7 @@ import (
 
 func newMarkdown() goldmark.Markdown {
 	return goldmark.New(
-		goldmark.WithExtensions(extension.GFM, extension.Footnote, extension.Typographer, alertExtension{}, figureExtension{}),
+		goldmark.WithExtensions(extension.GFM, extension.Footnote, extension.Typographer, alertExtension{}, todoExtension{}, figureExtension{}),
 		goldmark.WithParserOptions(parser.WithAutoHeadingID()),
 		goldmark.WithRendererOptions(
 			// Lower numbers run first, so this replaces goldmark's own code block renderer (1000).
