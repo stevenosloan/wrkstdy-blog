@@ -176,6 +176,9 @@ func Build(opts Options) (int, error) {
 			}
 		}
 	}
+	if err := writeSitemap(opts.Out, site, c); err != nil {
+		return 0, fmt.Errorf("writing %s: %w", sitemapURL, err)
+	}
 	return count, nil
 }
 
