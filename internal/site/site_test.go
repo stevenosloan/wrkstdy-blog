@@ -41,6 +41,7 @@ func TestCodeBlocks(t *testing.T) {
 		{"```diff\n- a\n```", `<pre><code class="language-git-diff">`},
 		{"```\nplain\n```", "<pre><code>plain"},
 		{"```mermaid\na --> b\n```", `<pre class="mermaid">a --&gt; b`},
+		{"```text summary=\"The <output>\"\nplain\n```", "<details class=\"code-details\"><summary>The &lt;output&gt;</summary>\n<pre><code class=\"language-text\">plain\n</code></pre>\n</details>"},
 	}
 	for _, tt := range tests {
 		got, err := b.renderMarkdown([]byte(tt.src), nil)

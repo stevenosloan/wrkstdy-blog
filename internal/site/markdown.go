@@ -37,7 +37,8 @@ var langAliases = map[string]string{
 
 // codeBlockRenderer writes fenced code as plain <pre><code class="language-x"> for
 // MicroLighter to color in the browser, ```mermaid blocks as <pre class="mermaid">,
-// and ```recipe blocks as recipe tables (see recipe.go).
+// and ```recipe blocks as recipe tables (see recipe.go). A summary="..." after the
+// language collapses the block into a <details>.
 type codeBlockRenderer struct{}
 
 func (r codeBlockRenderer) RegisterFuncs(reg renderer.NodeRendererFuncRegisterer) {
@@ -74,12 +75,35 @@ func (codeBlockRenderer) render(w util.BufWriter, src []byte, n ast.Node, enteri
 	if alias, ok := langAliases[lang]; ok {
 		lang = alias
 	}
+	summary := fenceSummary(block, src)
+	if summary != "" {
+		fmt.Fprintf(w, "<details class=\"code-details\"><summary>%s</summary>\n", html.EscapeString(summary))
+	}
 	if lang == "" {
 		fmt.Fprintf(w, "<pre><code>%s</code></pre>\n", body)
 	} else {
 		fmt.Fprintf(w, "<pre><code class=\"language-%s\">%s</code></pre>\n", html.EscapeString(lang), body)
 	}
+	if summary != "" {
+		w.WriteString("</details>\n")
+	}
 	return ast.WalkSkipChildren, nil
+}
+
+// summaryRE matches summary="..." in a fence's info string, after the language.
+var summaryRE = regexp.MustCompile(`\bsummary="([^"]*)"`)
+
+// fenceSummary returns the summary="..." from a fence like ```text summary="Output",
+// which wraps the block in a collapsed <details>.
+func fenceSummary(block *ast.FencedCodeBlock, src []byte) string {
+	if block.Info == nil {
+		return ""
+	}
+	m := summaryRE.FindSubmatch(block.Info.Segment.Value(src))
+	if m == nil {
+		return ""
+	}
+	return string(m[1])
 }
 
 // shortcodeRE matches {{< name >}}, the same syntax Hugo uses.
