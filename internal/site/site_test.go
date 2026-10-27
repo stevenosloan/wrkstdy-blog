@@ -336,3 +336,36 @@ func TestBuildWritesArchiveAndFeed(t *testing.T) {
 		t.Error("feed content has a site-relative link")
 	}
 }
+
+func TestBuildWritesSitemap(t *testing.T) {
+	out := t.TempDir()
+	// With drafts on, so the test catches one leaking into the sitemap.
+	if _, err := Build(Options{Root: "../..", Out: out, Drafts: true}); err != nil {
+		t.Fatal(err)
+	}
+	data, err := os.ReadFile(filepath.Join(out, "sitemap.xml"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var sitemap urlset
+	if err := xml.Unmarshal(data, &sitemap); err != nil {
+		t.Fatalf("sitemap.xml doesn't parse: %v", err)
+	}
+	locs := map[string]bool{}
+	for _, u := range sitemap.URLs {
+		if !strings.HasPrefix(u.Loc, "https://") {
+			t.Errorf("loc %q should be absolute", u.Loc)
+		}
+		locs[u.Loc] = true
+	}
+	for _, want := range []string{"https://wrkstdy.com/", "https://wrkstdy.com/blog/", "https://wrkstdy.com/blog/the-long-way-on-purpose/"} {
+		if !locs[want] {
+			t.Errorf("sitemap is missing %s", want)
+		}
+	}
+	for _, skip := range []string{"https://wrkstdy.com/404.html", "https://wrkstdy.com/blog/styleguide/"} {
+		if locs[skip] {
+			t.Errorf("sitemap shouldn't list %s", skip)
+		}
+	}
+}
