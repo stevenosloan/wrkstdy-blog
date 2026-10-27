@@ -7,8 +7,9 @@
 
 html { -webkit-text-size-adjust: 100%; }
 body {
+  --gutters: clamp(1rem, 5vw, 3rem);
   margin: 0 auto;
-  max-width: calc(var(--measure) + 2rem);
+  max-width: calc(var(--measure) + var(--gutters) * 2);
   padding: 0 1rem;
   padding: 0 clamp(1rem, 5vw, 3rem);
   background: var(--bg);
