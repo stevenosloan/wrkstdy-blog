@@ -27,7 +27,7 @@ checks:
 "Hugo or 11ty", not "Hugo/11ty".
 
 Why: a slash makes the reader decide what it means (and, or, either).
-When unsure: paths, URLs and fractions are fine; this is about words.
+When unsure: paths, URLs, and fractions are fine; this is about words.
 
 ### "markdown" is lowercase
 
