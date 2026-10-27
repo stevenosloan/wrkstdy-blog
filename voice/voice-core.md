@@ -10,10 +10,10 @@ Everything on wrkstdy is me talking to one reader. These are the defaults every 
 
 ### First person, plain words
 
-Write as "I", the way I'd explain it to a friend across the table. Prefer the plain word over the clever one.
+Write as "I", the way I'd explain it to a friend across the table. Prefer the plain word over the clever one. "We" is for me and AI working on something together, and only when that's who did it.
 
-Why: the site is a personal log, not a product. Polish that hides the person defeats the point.
-When unsure: read the sentence out loud. If I wouldn't say it, rewrite it.
+Why: the site is a personal log, not a product. Polish that hides the person defeats the point. A "we" that means me and AI is honest about how the work happened; any other "we" blurs who's talking.
+When unsure: read the sentence out loud. If I wouldn't say it, rewrite it. If "we" could mean the reader too, name who did it.
 
 ### Specific over general
 

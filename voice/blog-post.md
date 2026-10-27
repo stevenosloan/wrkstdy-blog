@@ -33,6 +33,13 @@ When something was tried and dropped, say so and why ("I had a 1920px size at fi
 
 Why: the dead ends are often the most useful part for someone doing the same thing.
 
+### Callouts for side points
+
+A `> [!NOTE]` is for a side point the reader can skip without losing the thread. A few a post, at most.
+
+Why: it lets a skimmer jump past it, and a post full of callouts has no thread left to follow.
+When unsure: if the post doesn't make sense without it, it's a paragraph, not a callout.
+
 ### Close on what the reader takes away
 
 End on what I hope the reader does or thinks differently, not on a recap.
