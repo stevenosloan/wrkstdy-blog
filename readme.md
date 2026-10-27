@@ -46,6 +46,8 @@ It won't overwrite an existing post, and the build fails if two posts end up wit
 - `{{< name >}}` on its own line drops in `templates/shortcodes/name.html`.
 - ` ```recipe ` blocks render as recipe tables (see below).
 
+[docs/](docs/README.md) covers the syntax for each of these, plus alerts, TODO comments, and collapsed code blocks.
+
 ## Journal entries and photos
 
 Every post is a folder (a page bundle), like `content/journal/2026-10-15-lake-day/index.md`, so its photos go next to `index.md`. `go tool mage new -section=journal` starts one. The build still reads a post that's a single `.md` file, but `mage new` doesn't make them.

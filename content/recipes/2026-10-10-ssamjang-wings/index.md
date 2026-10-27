@@ -1,6 +1,6 @@
 ---
 title: "Ssamjang wings"
-description: "Oven wings, dried under a fan and baked in three rounds of convection, tossed in a butter, ssamjang and buffalo sauce."
+description: "Oven wings, dried under a fan and baked in three rounds of convection, tossed in a butter, ssamjang, and buffalo sauce."
 ---
 
 ![A friend walking a rocky trail past a small waterfall](trail.jpg){loading=eager}

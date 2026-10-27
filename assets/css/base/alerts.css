@@ -23,3 +23,6 @@
 .alert-important { --alert-color: var(--important); }
 .alert-warning   { --alert-color: var(--accent-2); }
 .alert-caution   { --alert-color: var(--danger); }
+
+/* <!-- TODO --> comments on draft pages, rendered by internal/site/todo.go */
+.alert-todo      { --alert-color: var(--accent-2); border-left-style: dashed; }

@@ -1,6 +1,6 @@
 ---
 id: word-choice
-summary: "Small word rules: \"or\" not slashes, lowercase markdown, \"I have\", \"AI\"."
+summary: "Small word rules: \"or\" not slashes, lowercase markdown and project names, numerals for counts, \"I have\", \"AI\"."
 depends_on: [voice-core]
 status: accepted
 checks:
@@ -27,13 +27,27 @@ checks:
 "Hugo or 11ty", not "Hugo/11ty".
 
 Why: a slash makes the reader decide what it means (and, or, either).
-When unsure: paths, URLs and fractions are fine; this is about words.
+When unsure: paths, URLs, and fractions are fine; this is about words.
 
 ### "markdown" is lowercase
 
 Always, including at the start of a list item. (At the start of a sentence, rephrase.)
 
-Why: consistency; it's a format, not a brand I'm naming.
+Why: markdown is an idea, plain text with a little punctuation for structure, more than any one spec. CommonMark, GitHub's flavor, and goldmark all disagree on the edges, and I'm writing to the idea.
+
+### Project names keep their casing
+
+A lowercase name like plugh or tributary stays lowercase, even at the start of a sentence or a title.
+
+Why: it's the name as written; capitalizing it makes a different word.
+When unsure: this is for names. A common word like markdown still gets rephrased.
+
+### Numerals for counts
+
+Anything counted or measured is a numeral: "6 warnings", "1,500 words". At the start of a sentence, rephrase.
+
+Why: a numeral is easier to spot when skimming, and mixing "6" and "four" in one paragraph reads as a slip.
+When unsure: if the number isn't the point ("one or two sentences", "a thing or two"), words are fine.
 
 ### "I have", not "I've got"
 

@@ -55,6 +55,12 @@ pre {
   tab-size: 4;
 }
 
+/* ```lang summary="..." fences, rendered by internal/site/markdown.go */
+.code-details { margin: 0 0 1.25rem; }
+.code-details > summary { cursor: pointer; font-size: var(--font-size-sub-1); color: var(--muted); }
+.code-details[open] > summary { margin-bottom: 0.5rem; }
+.code-details > pre { max-height: 32rem; margin: 0; }
+
 table { border-collapse: collapse; width: 100%; }
 th, td { text-align: left; padding: 0.4rem 0.6rem; border-bottom: 1px solid var(--rule); }
 th { --font-family: var(--mono); font-size: 0.875em; font-weight: 600; }

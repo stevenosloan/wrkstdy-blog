@@ -32,7 +32,7 @@ Salted, peppered, and drying under a fan while the oven preheats.
 
 ## Resizing
 
-Every photo a page uses is resized to 640, 960 and 1280px wide. The text column is 640px, so those cover 1x and 2x screens, and phones at 3x, which are narrower than the column. I had a 1920px size at first, for 3x screens at desktop width, but it came to as much as the other three together, for screens that are rare. Widths wider than the photo are skipped, so nothing gets upscaled.
+Every photo a page uses is resized to 640, 960, and 1280px wide. The text column is 640px, so those cover 1x and 2x screens, and phones at 3x, which are narrower than the column. I had a 1920px size at first, for 3x screens at desktop width, but it came to as much as the other three together, for screens that are rare. Widths wider than the photo are skipped, so nothing gets upscaled.
 
 Phone cameras don't rotate the pixels when you hold the phone sideways. They store the rotation in the photo's EXIF data and leave it to whatever displays it. The resized copies don't carry EXIF, so the rotation gets applied before resizing.
 
