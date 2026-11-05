@@ -8,7 +8,7 @@
 
 [[projects]]
   name = "tributary"
-  url = "https://tributary-site.fly.dev/"
+  url = "https://tributary.observer/"
   description = "Current conditions on the water, for stream fishing in the US."
 
 [[projects]]
