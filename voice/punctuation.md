@@ -1,6 +1,6 @@
 ---
 id: punctuation
-summary: "Em dashes, throwaway asides, italics for stress, and Oxford commas."
+summary: "Em dashes, throwaway asides, italics for stress, quotes for borrowed phrases, and Oxford commas."
 depends_on: [voice-core]
 status: accepted
 checks:
@@ -35,6 +35,13 @@ Use *italics* on the one word I'd lean on when speaking. Not bold. Italics also 
 
 Why: it's how I emphasize out loud; bold reads as shouting. A new term gets the same lean, once.
 When unsure: one stressed word per paragraph, at most. A term is italic only where it's defined, not after.
+
+### Quotes for borrowed phrases
+
+A phrase I'm borrowing rather than defining goes in double quotes, the first time: "human in the loop". Italics stay for a term I'm coining or defining, like *chunk*.
+
+Why: quotes say the phrase is someone else's, used the way they use it; italics say the term is mine and I'm about to explain it.
+When unsure: if the next sentence explains what the phrase means here, it's a term and gets italics. If the reader already knows it, quotes.
 
 ### Oxford commas
 
