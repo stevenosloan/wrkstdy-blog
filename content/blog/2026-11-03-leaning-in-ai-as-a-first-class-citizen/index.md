@@ -1,7 +1,7 @@
 ---
 title: "Leaning in, AI as a first class citizen"
 description: "I'd been mistaking agent factories for loops. Once a loop was just a standard workflow, it fit in one file: a playbook AI follows on every task, stopping where I want a say."
-draft: true
+draft: false
 ---
 
 In my first post here, I said the next thing I wanted to try was playbooks and loops. Then I read the opening of Suraj Khaitan's [Stop Running Opus for Everything](https://dev.to/suraj_khaitan_f893c243958/stop-running-opus-for-everything-loop-engineering-and-the-multi-model-playbook-in-claude-code-dpd), and felt a little called out:
