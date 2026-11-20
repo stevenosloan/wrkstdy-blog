@@ -16,9 +16,8 @@ go tool mage build                 # write the site to public/
 go tool mage build -production     # test first, then build (what Netlify runs on deploy)
 go tool mage build -drafts         # include posts with draft: true (what PR deploy previews run)
 go tool mage test                  # go vet + tests
-go tool mage new                   # prompt for a title and start a draft post
-go tool mage new -section=journal  # same, as a folder for photos (see below)
-go tool mage new -section=recipes
+go tool mage new                   # prompt for a section, title, and date, and start a draft post
+go tool mage new -section=journal  # skip the section prompt
 go tool mage photos <post folder> <photo or folder>   # import photos ready to commit (see below)
 ```
 
@@ -28,6 +27,7 @@ Tasks live in `magefile.go`, and Mage is pinned in `go.mod` as a Go tool, so the
 
 ```sh
 go tool mage new
+# Section (blog, journal, recipes) [blog]:   (enter for blog)
 # Title: Building a blog, on purpose
 # Date [2026-10-13]:              (enter for today, or type YYYY-MM-DD)
 ```
@@ -36,7 +36,7 @@ That creates `content/blog/2026-10-13-building-a-blog-on-purpose/index.md` as a 
 
 The date in the folder's name is the post's date, and it's left out of the URL, so that post is served at `/blog/building-a-blog-on-purpose/`. To re-date a post, rename the folder, or set `date:` in its front matter, which wins over the name.
 
-Pass `-section` to put it somewhere other than `content/blog/`, e.g. `go tool mage new -section=notes`.
+Answer `journal` or `recipes` to start one there instead. A recipe starts with a placeholder ` ```recipe ` block under "The recipe" and a "The process" heading; a journal entry starts with a comment on adding photos. Pass `-section` to skip the prompt, or to use another folder, e.g. `go tool mage new -section=notes`.
 
 It won't overwrite an existing post, and the build fails if two posts end up with the same slug (say, the same title on different days). Change the title, or set `slug:` in the front matter.
 

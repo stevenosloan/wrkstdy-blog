@@ -9,7 +9,7 @@ import (
 	"unicode"
 )
 
-const postTemplate = `---
+const starterFrontMatter = `---
 title: %q
 description: ""
 draft: true
@@ -17,10 +17,33 @@ draft: true
 
 `
 
+// starterBodies are what a new post in these sections starts with, after the
+// front matter. Each has to build as it is, since drafts build with
+// serve -drafts: a recipe block can't be empty, and a photo has to exist.
+var starterBodies = map[string]string{
+	"recipes": "## The recipe\n\n" +
+		"```recipe\n" +
+		"the finished dish\n" +
+		"  the last step\n" +
+		"    an earlier step\n" +
+		"      an ingredient\n" +
+		"      another ingredient\n" +
+		"    an ingredient added at the end\n" +
+		"```\n\n" +
+		"## The process\n\n",
+	"journal": "<!--\n" +
+		"Import photos with: go tool mage photos <this folder> <photo or folder>\n" +
+		"Then add one with its caption on the next line:\n\n" +
+		"![What's in the photo](photo.jpg)\n" +
+		"The caption.\n" +
+		"-->\n\n",
+}
+
 // NewPost creates <root>/content/<section>/<date>-<slug>/index.md as a draft
 // with starter front matter, deriving the slug from the title. Every post is a
 // folder, so its photos can sit beside it. The date in the folder's name is the
-// post's date. It returns the new file's path and never overwrites an existing
+// post's date. Recipes and journal entries start with a body to fill in. It
+// returns the new file's path and never overwrites an existing
 // post.
 func NewPost(root, section, title string, date time.Time) (string, error) {
 	title = strings.TrimSpace(title)
@@ -47,7 +70,8 @@ func NewPost(root, section, title string, date time.Time) (string, error) {
 	}
 	defer f.Close()
 
-	if _, err := fmt.Fprintf(f, postTemplate, title); err != nil {
+	body := fmt.Sprintf(starterFrontMatter, title) + starterBodies[filepath.Base(dir)]
+	if _, err := f.WriteString(body); err != nil {
 		return "", err
 	}
 	return path, f.Close()
