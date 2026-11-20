@@ -87,11 +87,26 @@ func Test() error {
 	return sh.RunV("go", "test", "./...")
 }
 
-// New asks for a title and a date (default today) and creates a draft post, a folder slugged from the title.
+// New asks for a section (blog, journal, or recipes), a title, and a date (default today), and creates a draft post, a folder slugged from the title.
 func New(
-	section *string, // folder under content/ to create the post in (default blog)
+	section *string, // folder under content/ to create the post in; skips asking
 ) error {
 	in := bufio.NewReader(os.Stdin)
+	dir := ""
+	if section != nil {
+		dir = *section
+	}
+	if dir == "" {
+		answer, err := prompt(in, "Section (blog, journal, recipes) [blog]: ")
+		if err != nil {
+			return err
+		}
+		dir = answer
+	}
+	if dir == "" {
+		dir = "blog"
+	}
+
 	title, err := prompt(in, "Title: ")
 	if err != nil {
 		return err
@@ -113,10 +128,6 @@ func New(
 		return fmt.Errorf("date %q isn't YYYY-MM-DD", answer)
 	}
 
-	dir := "blog"
-	if section != nil && *section != "" {
-		dir = *section
-	}
 	path, err := site.NewPost(".", dir, title, date)
 	if err != nil {
 		return err
